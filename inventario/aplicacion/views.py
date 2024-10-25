@@ -1,46 +1,84 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions, status
-from .serializers import Registrar_EquiposSerializer, RegistrarUsuarioSerializer, RegistrarLicenciaSerializer
-from .models import RegistrarEquipo, RegistrarUsuario, RegistrarLicencia
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import generics, permissions
+from .serializers import (
+    RegistrarEquipoSerializer,
+    RegistrarUsuarioSerializer,
+    RegistrarLicenciaSerializer,
+    RegistrarMapaSerializer,
+    MantenimientoSerializer,
+    DocumentoSerializer
+)
+from .models import RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento, Documento
+
 # Create your views here.
 
 class RegistrarEquipoView(generics.ListCreateAPIView):
-    queryset = Equipos.objects.all()
-    serializer_class = Registrar_EquiposSerializer
+    queryset = RegistrarEquipo.objects.all()
+    serializer_class = RegistrarEquipoSerializer
     permission_classes = [permissions.AllowAny]
 
 
 class RegistrarUsuarioView(generics.ListCreateAPIView):
-    queryset =  Usuarios.objects.all()
-    serializer_class = RegistrarUsuariosSerializer
-    permission_classes = [permissions.AllowAny]
-
-
-class RegistrarlicenciasView(generics.ListCreateAPIView):
-    queryset =  licencias.objects.all()
-    serializer_class = RegistrarLicenciaSerializer
-    permission_classes = [permissions.AllowAny]        
-
-class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Equipos.objects.all()
-    serializer_class = RegistrarEquipoSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']
-
-class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Usuarios.objects.all()
+    queryset = RegistrarUsuario.objects.all()
     serializer_class = RegistrarUsuarioSerializer
     permission_classes = [permissions.AllowAny]
 
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE'] 
+class RegistrarMapaView(generics.ListCreateAPIView):
+    queryset = Documento.objects.all()
+    serializer_class = DocumentoSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class RegistrarMapaDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Documento.objects.all()
+    serializer_class = DocumentoSerializer
+    permission_classes = [permissions.AllowAny]
+
+class RegistrarLicenciaView(generics.ListCreateAPIView):
+    queryset = RegistrarLicencia.objects.all()
+    serializer_class = RegistrarLicenciaSerializer
+    permission_classes = [permissions.AllowAny]        
+
+
+class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RegistrarEquipo.objects.all()
+    serializer_class = RegistrarEquipoSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RegistrarUsuario.objects.all()
+    serializer_class = RegistrarUsuarioSerializer
+    permission_classes = [permissions.AllowAny]
+
 
 class RegistrarLicenciaDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Licencias.objects.all()
+    queryset = RegistrarLicencia.objects.all()
     serializer_class = RegistrarLicenciaSerializer
     permission_classes = [permissions.AllowAny]
 
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']               
+
+class MantenimientoView(generics.ListCreateAPIView):
+    queryset = Mantenimiento.objects.all()
+    serializer_class = MantenimientoSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class MantenimientoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Mantenimiento.objects.all()
+    serializer_class = MantenimientoSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class DocumentoView(generics.ListCreateAPIView):
+    queryset = Documento.objects.all()
+    serializer_class = DocumentoSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class DocumentoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Documento.objects.all()
+    serializer_class = DocumentoSerializer
+    permission_classes = [permissions.AllowAny]
