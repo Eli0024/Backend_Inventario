@@ -78,12 +78,11 @@ WSGI_APPLICATION = 'inventario.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'inventario_equipos',
+        'NAME': 'inventario',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '',
-        'OPTIONS': {'ssl_mode': 'DISABLED'},
+        'PORT': '3306',
     }
 }
 
