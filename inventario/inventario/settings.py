@@ -53,6 +53,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ORIGIN_WITHELIST = [
+    'http://localhost:4200'
+]
+
 ROOT_URLCONF = 'inventario.urls'
 
 TEMPLATES = [
@@ -84,7 +88,7 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
-        'PORT': '3306',
+        'PORT': '',
         # 'OPTIONS': {
         #     'ssl': False,  
         # },
