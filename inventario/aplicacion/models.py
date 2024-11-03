@@ -10,7 +10,7 @@ class RegistrarEquipo(models.Model):
     office = models.CharField(max_length=60)
     serial = models.CharField(max_length=60)
     serial_office = models.CharField(max_length=50)
-    fecha_adquisicion = models.DateField(null=True, blank=True)
+    fecha_adquisicion = models.CharField(max_length=50)
     vida_util = models.IntegerField(null=True, blank=True)   
     estado = models.CharField(max_length=50)
     responsable = models.ForeignKey('RegistrarUsuario', on_delete=models.CASCADE)  
@@ -60,7 +60,7 @@ class Documento(models.Model):
 class RegistrarLicencia(models.Model):
     id_licencia = models.AutoField(primary_key=True) 
     nombre = models.CharField(max_length=60)
-    contraseña = models.CharField(max_length=60)
+    contrasena = models.CharField(max_length=60)
 
 
     def __str__(self):
