@@ -1,21 +1,18 @@
 from django.db import models
 
 # Modelo para registrar equipos
+
 class RegistrarEquipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
     marca = models.CharField(max_length=50)
-    modelo = models.CharField(max_length=60)
-    memoria = models.CharField(max_length=50)
-    procesador = models.CharField(max_length=60)
     office = models.CharField(max_length=60)
     serial = models.CharField(max_length=60)
-    serial_office = models.CharField(max_length=50)
+    sistema_operativo = models.CharField(max_length=60)
     fecha_adquisicion = models.CharField(max_length=50)
-    vida_util = models.IntegerField(null=True, blank=True)   
     estado = models.CharField(max_length=50)
-    responsable = models.ForeignKey('RegistrarUsuario', on_delete=models.CASCADE)  
-    archivo = models.FileField(upload_to='archivos/', null=True, blank=True)
-    
+    responsable = models.ForeignKey('RegistrarUsuario', on_delete=models.CASCADE)
+    archivo = models.FileField(upload_to='equipos/', null=True, blank=True)
+
 
     def __str__(self):
         return f"{self.marca} {self.modelo} - {self.estado}"

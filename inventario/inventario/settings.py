@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'inventario.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'equipos',
+        'NAME': 'inventarioe',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
@@ -140,5 +140,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-MEDIA_URL = '/documentos/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'documentos/')
+# settings.py
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# settings.py
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB (ajusta según tus necesidades)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB (ajusta según tus necesidades)
