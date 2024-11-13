@@ -2,16 +2,24 @@ from django.db import models
 
 # Modelo para registrar equipos
 
+from django.db import models
+
+from django.db import models
+
 class RegistrarEquipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
     marca = models.CharField(max_length=50)
+    memoria = models.CharField(max_length=50, default='sin memoria')
+    procesador = models.CharField(max_length=50, default='sin procesador')
     office = models.CharField(max_length=60)
     serial = models.CharField(max_length=60)
+    serial_office = models.CharField(max_length=60, default='sin serial')  # Valor por defecto para 'serial_office'
     sistema_operativo = models.CharField(max_length=60)
     fecha_adquisicion = models.CharField(max_length=50)
     estado = models.CharField(max_length=50)
     responsable = models.ForeignKey('RegistrarUsuario', on_delete=models.CASCADE)
     archivo = models.FileField(upload_to='equipos/', null=True, blank=True)
+
 
 
     def __str__(self):

@@ -45,6 +45,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,12 +53,14 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    
 ]
 
-CORS_ORIGIN_WITHELIST = [
-    'http://localhost:4200'
+# Configuración de CORS
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:4200',  # El origen de tu frontend
 ]
+
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -88,7 +91,7 @@ WSGI_APPLICATION = 'inventario.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'inventarioe',
+        'NAME': 'back',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
