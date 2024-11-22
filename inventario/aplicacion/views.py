@@ -47,11 +47,37 @@ class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RegistrarEquipoSerializer
     permission_classes = [permissions.AllowAny]
 
+    def get(self, request, pk, format=None):
+        equipo = RegistrarEquipo.objects.get(pk=pk)
+        serializer = RegistrarEquipoSerializer(equipo)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        equipo = RegistrarEquipo.objects.get(pk=pk)
+        serializer = RegistrarEquipoSerializer(equipo, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarUsuario.objects.all()
     serializer_class = RegistrarUsuarioSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get(self, request, pk, format=None):
+        usuario = RegistrarUsuario.objects.get(pk=pk)
+        serializer = RegistrarUsuarioSerializer(usuario)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        usuario = RegistrarUsuario.objects.get(pk=pk)
+        serializer = RegistrarUsuarioSerializer(usuario, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegistrarLicenciaDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -59,6 +85,18 @@ class RegistrarLicenciaDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RegistrarLicenciaSerializer
     permission_classes = [permissions.AllowAny]
 
+    def get(self, request, pk, format=None):
+        licencia = RegistrarLicencia.objects.get(pk=pk)
+        serializer = RegistrarLicenciaSerializer(licencia)
+        return Response(serializer.data)
+
+    def put(self, request, pk, format=None):
+        licencia = RegistrarLicencia.objects.get(pk=pk)
+        serializer = RegistrarLicenciaSerializer(licencia, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class MantenimientoView(generics.ListCreateAPIView):
     queryset = Mantenimiento.objects.all()
