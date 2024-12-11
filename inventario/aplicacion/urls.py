@@ -13,6 +13,8 @@ urlpatterns = [
     path('licencias/<int:pk>/', RegistrarLicenciaDetailView.as_view(), name='licencias'),
     path('mantenimiento/', MantenimientoView.as_view(), name='listamantenimiento'),
     path('mantenimiento/<int:pk>/', MantenimientoDetailView.as_view(), name='mantenimiento'),
+    path('recursos/', RegistrarMapaView.as_view(), name='listarecursos'),
+    path('recursos/<int:pk>/', RegistrarMapaDetailView.as_view(), name='listarecursos'),
     path('documento/', DocumentoView.as_view(), name='listadocumento'),
     path('documento/<int:pk>/', DocumentoDetailView.as_view(), name='documento')
 ]
