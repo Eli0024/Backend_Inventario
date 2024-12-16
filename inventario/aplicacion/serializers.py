@@ -1,4 +1,4 @@
-from . models import RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento,Documento
+from . models import Conexion, Nodo, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento,Impresora, Switch
 from rest_framework import serializers
 
 class RegistrarEquipoSerializer(serializers.ModelSerializer):
@@ -26,8 +26,28 @@ class MantenimientoSerializer(serializers.ModelSerializer):
         model = Mantenimiento
         fields = '__all__'
 
-class DocumentoSerializer(serializers.ModelSerializer):
+class ImpresoraSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Documento
+        model = Impresora
+        fields = '__all__'
+
+class MapaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegistrarMapa
+        fields = '__all__'
+
+class NodoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Nodo
+        fields = '__all__'
+
+class SwitchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Switch
+        fields = '__all__'
+
+class ConexionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Conexion
         fields = '__all__'
 

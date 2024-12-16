@@ -1,8 +1,8 @@
 from django.urls import path
 from . import views 
 from .views import (RegistrarEquipoView, RegistrarUsuarioView, RegistrarLicenciaView, RegistrarMapaView, MantenimientoView,
-DocumentoView, RegistrarEquipoDetailView, RegistrarUsuarioDetailView, RegistrarLicenciaDetailView, RegistrarMapaDetailView,
-DocumentoDetailView, MantenimientoDetailView)
+RegistrarImpresoraView, RegistrarEquipoDetailView, RegistrarUsuarioDetailView, RegistrarLicenciaDetailView, RegistrarMapaDetailView,
+RegistrarImpresoraDetailView, MantenimientoDetailView)
 
 urlpatterns = [
     path('registrarequipo/', RegistrarEquipoView.as_view(), name="listaequipo"),
@@ -15,6 +15,9 @@ urlpatterns = [
     path('mantenimiento/<int:pk>/', MantenimientoDetailView.as_view(), name='mantenimiento'),
     path('recursos/', RegistrarMapaView.as_view(), name='listarecursos'),
     path('recursos/<int:pk>/', RegistrarMapaDetailView.as_view(), name='listarecursos'),
-    path('documento/', DocumentoView.as_view(), name='listadocumento'),
-    path('documento/<int:pk>/', DocumentoDetailView.as_view(), name='documento')
+    path('impresora/', RegistrarImpresoraView.as_view(), name='listadocumento'),
+    path('impresora/<int:pk>/', RegistrarImpresoraDetailView.as_view(), name='documento'),
+    path('registrarequipo/total', views.total_equipos, name='total_equipos'),
+    path('registrarusuario/total', views.total_usuarios, name='total_usuarios'),
+    path('registrarlicencia/total', views.total_licencias, name='total_licencias')
 ]
