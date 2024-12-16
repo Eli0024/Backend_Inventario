@@ -6,6 +6,7 @@ from django.db import models
 class RegistrarEquipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
     marca = models.CharField(max_length=50)
+    modelo = models.CharField(max_length=50)
     memoria = models.CharField(max_length=50, default='sin memoria')
     procesador = models.CharField(max_length=50, default='sin procesador')
     office = models.CharField(max_length=60)
@@ -64,7 +65,7 @@ class RegistrarLicencia(models.Model):
 
 
     def __str__(self):
-        return self.nombre
+        return self.correo
 
 # Modelo para registrar mapa 
 class RegistrarMapa(models.Model):
