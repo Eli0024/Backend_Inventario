@@ -51,6 +51,7 @@ class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarEquipo.objects.all()
     serializer_class = RegistrarEquipoSerializer
     permission_classes = [permissions.AllowAny]
+    
 
     def get(self, request, pk, format=None):
         equipo = RegistrarEquipo.objects.get(pk=pk)

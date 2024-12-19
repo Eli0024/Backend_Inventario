@@ -1,11 +1,30 @@
 from . models import Conexion, Nodo, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento,Impresora, Switch
 from rest_framework import serializers
 
+
+class ResponsableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegistrarUsuario
+        fields = ['nombre', 'apellido']  # Puedes incluir otros campos si los necesitas
+
+
 class RegistrarEquipoSerializer(serializers.ModelSerializer):
+   
+
+    responsable = ResponsableSerializer() 
+
     class Meta:
         model = RegistrarEquipo
         fields = '__all__'
 
+    
+    # responsable = serializers.PrimaryKeyRelatedField(queryset=RegistrarUsuario.objects.all())
+    def create(self, validated_data):
+        responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
+        responsable_instance, created = RegistrarUsuario.objects.get_or_create(**responsable_data)
+        equipo = RegistrarEquipo.objects.create(responsable=responsable_instance, **validated_data)
+        return equipo
+     
 class RegistrarUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarUsuario
