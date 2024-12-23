@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.views import APIView
 from rest_framework import viewsets
 from rest_framework import status
@@ -51,7 +52,14 @@ class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarEquipo.objects.all()
     serializer_class = RegistrarEquipoSerializer
     permission_classes = [permissions.AllowAny]
-    
+    parser_classes = (MultiPartParser, FormParser)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, pk, format=None):
         equipo = RegistrarEquipo.objects.get(pk=pk)
