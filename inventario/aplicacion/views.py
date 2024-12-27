@@ -18,6 +18,7 @@ from .serializers import (
 )
 from .models import Conexion, Nodo, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento, Impresora, Switch
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 
 # Create your views here.
 
@@ -53,9 +54,9 @@ class RegistrarLicenciaView(generics.ListCreateAPIView):
 class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarEquipo.objects.all()
     serializer_class = RegistrarEquipoSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated] 
     parser_classes = (MultiPartParser, FormParser)
-    
+
 
     def get(self, request, pk, format=None):
         equipo = RegistrarEquipo.objects.get(pk=pk)
@@ -74,7 +75,7 @@ class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
 class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarUsuario.objects.all()
     serializer_class = RegistrarUsuarioSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticated] 
 
     def get(self, request, pk, format=None):
         usuario = RegistrarUsuario.objects.get(pk=pk)
