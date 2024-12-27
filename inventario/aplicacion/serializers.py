@@ -13,6 +13,7 @@ class RegistrarEquipoSerializer(serializers.ModelSerializer):
 
     responsable = ResponsableSerializer() 
 
+
     class Meta:
         model = RegistrarEquipo
         fields = '__all__'
@@ -24,6 +25,7 @@ class RegistrarEquipoSerializer(serializers.ModelSerializer):
         responsable_instance, created = RegistrarUsuario.objects.get_or_create(**responsable_data)
         equipo = RegistrarEquipo.objects.create(responsable=responsable_instance, **validated_data)
         return equipo
+    
      
 class RegistrarUsuarioSerializer(serializers.ModelSerializer):
     class Meta:

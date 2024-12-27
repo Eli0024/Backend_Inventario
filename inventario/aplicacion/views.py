@@ -17,6 +17,7 @@ from .serializers import (
     SwitchSerializer
 )
 from .models import Conexion, Nodo, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento, Impresora, Switch
+from rest_framework.parsers import MultiPartParser, FormParser
 
 # Create your views here.
 
@@ -24,6 +25,7 @@ class RegistrarEquipoView(generics.ListCreateAPIView):
     queryset = RegistrarEquipo.objects.all()
     serializer_class = RegistrarEquipoSerializer
     permission_classes = [permissions.AllowAny]
+    parser_classes = (MultiPartParser, FormParser)
 
 
 class RegistrarUsuarioView(generics.ListCreateAPIView):
@@ -53,13 +55,7 @@ class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RegistrarEquipoSerializer
     permission_classes = [permissions.AllowAny]
     parser_classes = (MultiPartParser, FormParser)
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
     def get(self, request, pk, format=None):
         equipo = RegistrarEquipo.objects.get(pk=pk)
