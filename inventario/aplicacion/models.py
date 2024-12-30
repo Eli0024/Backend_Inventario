@@ -2,6 +2,14 @@ from django.db import models
 
 # Modelo para registrar equipos
 
+class registrar_usuario(models.Model):
+    id_usuario = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=50)
+    direccion = models.CharField(max_length=50)
+    telefono = models.BigIntegerField()
+    email = models.CharField(max_length=50)
+    is_staff = models.BooleanField
+
 
 class RegistrarEquipo(models.Model):
     id_equipo = models.AutoField(primary_key=True)
