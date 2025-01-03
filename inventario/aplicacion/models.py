@@ -1,14 +1,24 @@
 from django.db import models
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth.models import AbstractUser
 
-# Modelo para registrar equipos
-
-class registrar_usuario(models.Model):
+class RegistrarUsuario(AbstractUser):
     id_usuario = models.AutoField(primary_key=True)
-    nombre = models.CharField(max_length=50)
-    direccion = models.CharField(max_length=50)
-    telefono = models.BigIntegerField()
-    email = models.CharField(max_length=50)
-    is_staff = models.BooleanField
+    username = models.CharField(max_length=50, unique=True)  # Es recomendable que 'username' sea único
+    password = models.CharField(max_length=128)  # Usamos un tamaño mayor para las contraseñas encriptadas
+    is_staff = models.BooleanField(default=False)  # Debes asignar un valor predeterminado
+
+    # Método para establecer la contraseña de forma segura
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)  # Encriptamos la contraseña
+
+    # Método para verificar la contraseña
+    def check_password(self, raw_password):
+        from django.contrib.auth.hashers import check_password
+        return check_password(raw_password, self.password)  # Comprobamos la contraseña encriptada
+
+    def __str__(self):
+        return self.username
 
 
 class RegistrarEquipo(models.Model):
@@ -19,11 +29,10 @@ class RegistrarEquipo(models.Model):
     procesador = models.CharField(max_length=50, default='sin procesador')
     office = models.CharField(max_length=60)
     serial = models.CharField(max_length=60,  unique=True)
-    windows = models.CharField(max_length=60, default='sin memoria')
     sistema_operativo = models.CharField(max_length=60)
     fecha_adquisicion = models.CharField(max_length=50)
     estado = models.CharField(max_length=50)
-    responsable = models.ForeignKey('RegistrarUsuario', on_delete=models.CASCADE)
+    responsable = models.ForeignKey('RegistrarColaborador', on_delete=models.CASCADE)
     archivo = models.FileField(upload_to='equipos/', null=True, blank=True)
 
 
@@ -32,7 +41,7 @@ class RegistrarEquipo(models.Model):
         return f"{self.marca} {self.modelo} - {self.estado}"
 
 # Modelo para registrar usuarios
-class RegistrarUsuario(models.Model):
+class RegistrarColaborador(models.Model):
     id_usuario = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=60)
     apellido = models.CharField(max_length=60)

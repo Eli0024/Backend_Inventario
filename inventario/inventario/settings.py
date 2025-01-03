@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'aplicacion',
     'rest_framework',
     'corsheaders',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -101,7 +102,7 @@ WSGI_APPLICATION = 'inventario.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'inventary',
+        'NAME': 'equipo',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',
@@ -160,3 +161,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # settings.py
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB (ajusta según tus necesidades)
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB (ajusta según tus necesidades)
+
+# settings.py
+AUTH_USER_MODEL = 'aplicacion.RegistrarUsuario'

@@ -1,14 +1,16 @@
 from django.urls import path
 from . import views 
-from .views import (RegistrarEquipoView, RegistrarUsuarioView, RegistrarLicenciaView, RegistrarMapaView, MantenimientoView,
-RegistrarImpresoraView, RegistrarEquipoDetailView, RegistrarUsuarioDetailView, RegistrarLicenciaDetailView, RegistrarMapaDetailView,
+from .views import (LoginView, RegisterViewSet, RegistrarColaboradorDetailView, RegistrarColaboradorView, RegistrarEquipoView, RegistrarLicenciaView, RegistrarMapaView, MantenimientoView,
+RegistrarImpresoraView, RegistrarEquipoDetailView, RegistrarLicenciaDetailView, RegistrarMapaDetailView,
 RegistrarImpresoraDetailView, MantenimientoDetailView)
 
 urlpatterns = [
+    path('register/', RegisterViewSet.as_view(), name='register'),
+    path('login/', LoginView.as_view(), name='login'),
     path('registrarequipo/', RegistrarEquipoView.as_view(), name="listaequipo"),
     path('registrarequipo/<int:pk>/', RegistrarEquipoDetailView.as_view(), name="registrarequipo"),
-    path('usuarios/', RegistrarUsuarioView.as_view(), name='listausuarios'),
-    path('usuarios/<int:pk>/', RegistrarUsuarioDetailView.as_view(), name="registrarusuario"),
+    path('usuarios/', RegistrarColaboradorView.as_view(), name='listausuarios'),
+    path('usuarios/<int:pk>/', RegistrarColaboradorDetailView.as_view(), name="registrarusuario"),
     path('licencias/', RegistrarLicenciaView.as_view(), name='listalicencia'),
     path('licencias/<int:pk>/', RegistrarLicenciaDetailView.as_view(), name='licencias'),
     path('mantenimiento/', MantenimientoView.as_view(), name='listamantenimiento'),
