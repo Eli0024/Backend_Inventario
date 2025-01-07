@@ -1,21 +1,11 @@
 from django.db import models
-from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import AbstractUser
 
 class RegistrarUsuario(AbstractUser):
     id_usuario = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=50, unique=True)  # Es recomendable que 'username' sea único
-    password = models.CharField(max_length=128)  # Usamos un tamaño mayor para las contraseñas encriptadas
-    is_staff = models.BooleanField(default=False)  # Debes asignar un valor predeterminado
-
-    # Método para establecer la contraseña de forma segura
-    def set_password(self, raw_password):
-        self.password = make_password(raw_password)  # Encriptamos la contraseña
-
-    # Método para verificar la contraseña
-    def check_password(self, raw_password):
-        from django.contrib.auth.hashers import check_password
-        return check_password(raw_password, self.password)  # Comprobamos la contraseña encriptada
+    username = models.CharField(max_length=50, unique=True)
+    password = models.CharField(max_length=50)
+    is_staff = models.BooleanField(default=False)  # Agrega un valor por defecto o elimínalo si no es obligatorio
 
     def __str__(self):
         return self.username

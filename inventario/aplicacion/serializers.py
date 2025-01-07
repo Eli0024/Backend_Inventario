@@ -1,27 +1,28 @@
 from . models import Conexion, Nodo, RegistrarColaborador, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento,Impresora, Switch
 from rest_framework import serializers
-from django.contrib.auth.hashers import make_password
-
-class RegistrarUsuarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RegistrarUsuario
-        fields = '__all__'
+from django.contrib.auth.models import User
 
 
 class userSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarUsuario
-        fields = ['username', 'password', 'is_staff']
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        # Creación del usuario con la contraseña cifrada
-        user = RegistrarUsuario(**validated_data)
-        user.set_password(validated_data['password'])  # Asegurarse de que la contraseña esté cifrada
-        user.save()
-        return user
+        fields = ['id_usuario','username','password','is_staff']
+        
+        extra_kwargs = {
+            'is_staff': {'read_only': False}, 
+        }
         
 
+        def create(self, validated_data):
+            user = RegistrarUsuario.objects.create_user(
+                username=validated_data['username'],
+                password=validated_data['password']
+            )
+            if 'is_staff' in validated_data:
+                user.is_staff = validated_data['is_staff']
+                user.save()
+            return user
+        
 class ResponsableSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarColaborador
