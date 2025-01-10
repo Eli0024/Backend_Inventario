@@ -93,3 +93,7 @@ class ConexionSerializer(serializers.ModelSerializer):
         model = Conexion
         fields = '__all__'
 
+class RegistrarUsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegistrarUsuario
+        fields = '__all__'

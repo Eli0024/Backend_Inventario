@@ -1,8 +1,7 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from rest_framework import status
+from django.shortcuts import render
+from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.response import Response
-from rest_framework import generics, permissions
 from .serializers import (
     ConexionSerializer,
     RegistrarColaboradorSerializer,
@@ -12,30 +11,31 @@ from .serializers import (
     MapaSerializer,
     MantenimientoSerializer,
     ImpresoraSerializer,
+    RegistrarUsuarioSerializer,
     SwitchSerializer,
     userSerializer
 )
 from .models import Conexion, Nodo, RegistrarColaborador, RegistrarEquipo, RegistrarLicencia, RegistrarMapa, Mantenimiento, Impresora, RegistrarUsuario, Switch
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status, permissions
-from rest_framework.authtoken.models import Token  # Asegúrate de importar el serializer correcto
-from rest_framework.decorators import api_view
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
+from rest_framework import status,generics, permissions
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+
 
 
 @api_view(['POST'])
-def register(request):
+def register (request):
     serializer = userSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()  # Guardar el usuario sin contraseña cifrada
-        user.set_password(request.data['password'])  # Cifrar la contraseña
-        user.save()  # Guardar nuevamente con la contraseña cifrada
+        serializer.save()
+        user  = RegistrarUsuario.objects.get(username=serializer.data['username'])
+        user.set_password(serializer.data['password'])
+        user.save()
         token = Token.objects.create(user=user)
         return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 @api_view(['POST'])
 def login(request):
@@ -46,16 +46,25 @@ def login(request):
     serializer = userSerializer(instance=user)
     return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
 
+# class LoginView(APIView):
+#     authentication_classes = [TokenAuthentication]  # Usar autenticación por token
+#     permission_classes = [IsAuthenticated]  # Asegurarse de que el usuario esté autenticado
 
-# class RegistrarUsuarioViewSet(generics.ListCreateAPIView):
-#     queryset = RegistrarUsuario.objects.all()
-#     serializer_class = RegistrarUsuarioSerializer
-#     permissions_classes =[permissions.AllowAny]
+#     def post(self, request):
+#         # Aquí puedes manejar la lógica de login, por ejemplo, retornando un mensaje de éxito
+#         return Response({"message": "Login exitoso"})
 
-# class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
-#     queryset = RegistrarUsuario.objects.all()
-#     serializer_class = RegistrarUsuarioSerializer
-#     permission_classes = [permissions.AllowAny]
+
+
+class RegistrarUsuarioViewSet(generics.ListCreateAPIView):
+     queryset = RegistrarUsuario.objects.all()
+     serializer_class = RegistrarUsuarioSerializer
+     permissions_classes =[permissions.AllowAny]
+
+class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
+     queryset = RegistrarUsuario.objects.all()
+     serializer_class = RegistrarUsuarioSerializer
+     permission_classes = [permissions.AllowAny]
 
 class RegistrarEquipoView(generics.ListCreateAPIView):
     queryset = RegistrarEquipo.objects.all()

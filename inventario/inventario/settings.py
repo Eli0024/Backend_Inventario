@@ -66,8 +66,8 @@ MIDDLEWARE = [
 ]
 
 # Configuración de CORS
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:4200',  # El origen de tu frontend
+CORS_ORIGIN_WITHELIST = [
+    'http://localhost:4200'
 ]
 
 
