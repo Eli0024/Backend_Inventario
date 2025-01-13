@@ -47,13 +47,6 @@ INSTALLED_APPS = [
 
 # mi_proyecto/settings.py
 
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -65,12 +58,9 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
-# Configuración de CORS
 CORS_ORIGIN_WITHELIST = [
     'http://localhost:4200'
 ]
-
-
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'inventario.urls'
