@@ -23,6 +23,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
+from rest_framework.views import APIView
+from aplicacion.models import RegistrarUsuario  # Asegúrate de importar tu modelo personalizado
+
 
 
 @api_view(['POST'])
@@ -37,22 +40,46 @@ def register (request):
         return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+from django.contrib.auth import authenticate
+
 @api_view(['POST'])
+@authentication_classes([TokenAuthentication])  # Usamos el TokenAuthentication para verificar el token
+@permission_classes([IsAuthenticated])  # Aseguramos que el usuario debe estar autenticado
 def login(request):
-    user = get_object_or_404(RegistrarUsuario, username=request.data['username'])
-    if not user.check_password(request.data['password']):
-        return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
+    user = request.user  # Al usar TokenAuthentication, 'request.user' estará poblado automáticamente con el usuario autenticado
+
+    # Si el usuario no está autenticado, devolveremos un error
+    if not user:
+        return Response({'error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Generamos o recuperamos el token para el usuario (aunque si ya está autenticado, no es necesario generar uno nuevo)
     token, created = Token.objects.get_or_create(user=user)
-    serializer = userSerializer(instance=user)
-    return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
+
+    return Response({
+        'token': token.key,
+        'user': {
+            'username': user.username,
+            'is_staff': user.is_staff
+        }
+    }, status=status.HTTP_200_OK)
+
+
+# @api_view(['POST'])
+# def login(request):
+#     user = get_object_or_404(RegistrarUsuario, username=request.data['username'])
+#     if not user.check_password(request.data['password']):
+#         return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
+#     token, created = Token.objects.get_or_create(user=user)
+#     serializer = userSerializer(instance=user)
+#     return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
 
 # class LoginView(APIView):
 #     authentication_classes = [TokenAuthentication]  # Usar autenticación por token
 #     permission_classes = [IsAuthenticated]  # Asegurarse de que el usuario esté autenticado
 
 #     def post(self, request):
-#         # Aquí puedes manejar la lógica de login, por ejemplo, retornando un mensaje de éxito
-#         return Response({"message": "Login exitoso"})
+# #         # Aquí puedes manejar la lógica de login, por ejemplo, retornando un mensaje de éxito
+#        return Response({"message": "Login exitoso"})
 
 
 
@@ -209,9 +236,9 @@ def total_equipos(request):
     total = RegistrarEquipo.objects.count()
     return JsonResponse(total, safe=False)
 
-def total_usuarios(request):
+def total_colaboradores(request):
     # Obtén el total de equipos
-    total = RegistrarUsuario.objects.count()
+    total = RegistrarColaborador.objects.count()
     return JsonResponse(total, safe=False)
 
 def total_licencias(request):

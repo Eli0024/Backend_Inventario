@@ -32,7 +32,7 @@ class RegistrarEquipo(models.Model):
 
 # Modelo para registrar usuarios
 class RegistrarColaborador(models.Model):
-    id_usuario = models.AutoField(primary_key=True)
+    id_colaborador = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=60)
     apellido = models.CharField(max_length=60)
     empresa = models.CharField(max_length=50)
