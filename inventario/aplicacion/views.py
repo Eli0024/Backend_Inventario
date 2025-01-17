@@ -25,7 +25,7 @@ from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from aplicacion.models import RegistrarUsuario  # Asegúrate de importar tu modelo personalizado
-
+from rest_framework import generics, permissions, status
 
 
 @api_view(['POST'])
@@ -40,7 +40,6 @@ def register (request):
         return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from django.contrib.auth import authenticate
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])  # Usamos el TokenAuthentication para verificar el token
@@ -64,34 +63,27 @@ def login(request):
     }, status=status.HTTP_200_OK)
 
 
-# @api_view(['POST'])
-# def login(request):
-#     user = get_object_or_404(RegistrarUsuario, username=request.data['username'])
-#     if not user.check_password(request.data['password']):
-#         return Response({'error': 'Invalid password'}, status=status.HTTP_400_BAD_REQUEST)
-#     token, created = Token.objects.get_or_create(user=user)
-#     serializer = userSerializer(instance=user)
-#     return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_200_OK)
-
-# class LoginView(APIView):
-#     authentication_classes = [TokenAuthentication]  # Usar autenticación por token
-#     permission_classes = [IsAuthenticated]  # Asegurarse de que el usuario esté autenticado
-
-#     def post(self, request):
-# #         # Aquí puedes manejar la lógica de login, por ejemplo, retornando un mensaje de éxito
-#        return Response({"message": "Login exitoso"})
-
-
-
 class RegistrarUsuarioViewSet(generics.ListCreateAPIView):
      queryset = RegistrarUsuario.objects.all()
      serializer_class = RegistrarUsuarioSerializer
      permissions_classes =[permissions.AllowAny]
 
+     def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+
 class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
      queryset = RegistrarUsuario.objects.all()
      serializer_class = RegistrarUsuarioSerializer
      permission_classes = [permissions.AllowAny]
+
+     def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
 
 class RegistrarEquipoView(generics.ListCreateAPIView):
     queryset = RegistrarEquipo.objects.all()
@@ -99,16 +91,34 @@ class RegistrarEquipoView(generics.ListCreateAPIView):
     permission_classes = [permissions.AllowAny]
     # parser_classes = (MultiPartParser, FormParser)
 
+    def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+
 
 class RegistrarColaboradorView(generics.ListCreateAPIView):
     queryset = RegistrarColaborador.objects.all()
     serializer_class = RegistrarColaboradorSerializer
     permission_classes = [permissions.AllowAny]
 
+    def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+
 class RegistrarMapaView(generics.ListCreateAPIView):
     queryset = RegistrarMapa.objects.all()
     serializer_class = MapaSerializer
     permission_classes = [permissions.AllowAny]
+
+    def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
 
 
 class RegistrarMapaDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -116,10 +126,22 @@ class RegistrarMapaDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = MapaSerializer
     permission_classes = [permissions.AllowAny]
 
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
+
 class RegistrarLicenciaView(generics.ListCreateAPIView):
     queryset = RegistrarLicencia.objects.all()
     serializer_class = RegistrarLicenciaSerializer
     permission_classes = [permissions.AllowAny]        
+
+    def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
 
 
 class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -127,6 +149,12 @@ class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = RegistrarEquipoSerializer
     permission_classes = [IsAuthenticated] 
     # parser_classes = (MultiPartParser, FormParser)
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
 
 
     def get(self, request, pk, format=None):
@@ -160,6 +188,12 @@ class RegistrarColaboradorDetailView(generics.RetrieveUpdateDestroyAPIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
 
 
 class RegistrarLicenciaDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -179,13 +213,24 @@ class RegistrarLicenciaDetailView(generics.RetrieveUpdateDestroyAPIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
 
 class MantenimientoView(generics.ListCreateAPIView):
     queryset = Mantenimiento.objects.all()
     serializer_class = MantenimientoSerializer
     permission_classes = [permissions.AllowAny]
 
-
+    def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+        
 class MantenimientoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Mantenimiento.objects.all()
     serializer_class = MantenimientoSerializer
@@ -205,16 +250,30 @@ class MantenimientoDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
+    
 class RegistrarImpresoraView(generics.ListCreateAPIView):
     queryset = Impresora.objects.all()
     serializer_class = ImpresoraSerializer
     permission_classes = [permissions.AllowAny]
 
+    
 
 class RegistrarImpresoraDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Impresora.objects.all()
     serializer_class = ImpresoraSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
+
 
 class NodoViewSet(viewsets.ModelViewSet):
     queryset = Nodo.objects.all()
