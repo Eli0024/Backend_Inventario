@@ -4,25 +4,25 @@ from django.contrib.auth.models import User
 
 
 class userSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RegistrarUsuario
-        fields = ['id_usuario','username','password','is_staff']
+     class Meta:
+         model = RegistrarUsuario
+         fields = ['id_usuario','username','password','is_staff']
         
-        extra_kwargs = {
-            'is_staff': {'read_only': False}, 
-        }
+         extra_kwargs = {
+             'is_staff': {'read_only': False}, 
+         }
+        
+         def create(self, validated_data):
+             user = RegistrarUsuario.objects.create_user(
+                 username=validated_data['username'],
+                 password=validated_data['password']
+             )
+             if 'is_staff' in validated_data:
+                 user.is_staff = validated_data['is_staff']
+                 user.save()
+             return user
         
 
-        def create(self, validated_data):
-            user = RegistrarUsuario.objects.create_user(
-                username=validated_data['username'],
-                password=validated_data['password']
-            )
-            if 'is_staff' in validated_data:
-                user.is_staff = validated_data['is_staff']
-                user.save()
-            return user
-        
 class ResponsableSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarColaborador

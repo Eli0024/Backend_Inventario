@@ -46,12 +46,23 @@ INSTALLED_APPS = [
 ]
 
 # mi_proyecto/settings.py
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.TokenAuthentication',
-#     ],
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',  # Autenticación por token
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',  # Requiere autenticación
+    ],
+}
 
+# settings.py
+SESSION_COOKIE_NAME = 'sessionid'  # Nombre de la cookie de sesión
+SESSION_COOKIE_HTTPONLY = True    # Asegura que la cookie no sea accesible desde JavaScript
+SESSION_COOKIE_SECURE = False      # Solo enviar cookies sobre HTTPS (en producción)
+SESSION_COOKIE_SAMESITE = 'Lax'   # Previene ataques CSRF
+
+# settings.py
+CORS_ALLOW_CREDENTIALS = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -160,3 +171,9 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10 MB (ajusta según tus necesidades)
 
 # settings.py
 AUTH_USER_MODEL = 'aplicacion.RegistrarUsuario'
+
+
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    # Otros hashers si es necesario
+]

@@ -26,34 +26,30 @@ from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from aplicacion.models import RegistrarUsuario  # Asegúrate de importar tu modelo personalizado
 from rest_framework import generics, permissions, status
-
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import PermissionDenied
 
 @api_view(['POST'])
-def register (request):
+def register(request):
     serializer = userSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        user  = RegistrarUsuario.objects.get(username=serializer.data['username'])
+        user = RegistrarUsuario.objects.get(username=serializer.data['username'])
         user.set_password(serializer.data['password'])
         user.save()
         token = Token.objects.create(user=user)
         return Response({'token': token.key, 'user': serializer.data}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 @api_view(['POST'])
-@authentication_classes([TokenAuthentication])  # Usamos el TokenAuthentication para verificar el token
-@permission_classes([IsAuthenticated])  # Aseguramos que el usuario debe estar autenticado
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def login(request):
-    user = request.user  # Al usar TokenAuthentication, 'request.user' estará poblado automáticamente con el usuario autenticado
-
-    # Si el usuario no está autenticado, devolveremos un error
+    user = request.user
     if not user:
         return Response({'error': 'Credenciales incorrectas'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Generamos o recuperamos el token para el usuario (aunque si ya está autenticado, no es necesario generar uno nuevo)
     token, created = Token.objects.get_or_create(user=user)
-
     return Response({
         'token': token.key,
         'user': {
@@ -61,6 +57,40 @@ def login(request):
             'is_staff': user.is_staff
         }
     }, status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        request.user.auth_token.delete()
+    except (AttributeError, Token.DoesNotExist):
+        pass
+
+    response = Response({'message': 'Logged out successfully'})
+    response.delete_cookie('token')
+    return response
+
+class RegistrarEquipoView(generics.ListCreateAPIView):
+    queryset = RegistrarEquipo.objects.all()
+    serializer_class = RegistrarEquipoSerializer
+    permission_classes = [IsAuthenticated]  # Solo usuarios autenticados
+
+    def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+
+class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = RegistrarEquipo.objects.all()
+    serializer_class = RegistrarEquipoSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]  # Solo administradores
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Equipo eliminado correctamente"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class RegistrarUsuarioViewSet(generics.ListCreateAPIView):
@@ -84,18 +114,6 @@ class RegistrarUsuarioDetailView(generics.RetrieveUpdateDestroyAPIView):
             if not self.request.user.is_staff:
                 raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
         return super().get_permissions()
-
-class RegistrarEquipoView(generics.ListCreateAPIView):
-    queryset = RegistrarEquipo.objects.all()
-    serializer_class = RegistrarEquipoSerializer
-    permission_classes = [permissions.AllowAny]
-    # parser_classes = (MultiPartParser, FormParser)
-
-    def perform_create(self, serializer):
-        if self.request.user.is_staff:
-            serializer.save()
-        else:
-            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
 
 
 class RegistrarColaboradorView(generics.ListCreateAPIView):
@@ -142,33 +160,6 @@ class RegistrarLicenciaView(generics.ListCreateAPIView):
             serializer.save()
         else:
             raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
-
-
-class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = RegistrarEquipo.objects.all()
-    serializer_class = RegistrarEquipoSerializer
-    permission_classes = [IsAuthenticated] 
-    # parser_classes = (MultiPartParser, FormParser)
-
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            if not self.request.user.is_staff:
-                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
-        return super().get_permissions()
-
-
-    def get(self, request, pk, format=None):
-        equipo = RegistrarEquipo.objects.get(pk=pk)
-        serializer = RegistrarEquipoSerializer(equipo)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        equipo = RegistrarEquipo.objects.get(pk=pk)
-        serializer = RegistrarEquipoSerializer(equipo, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegistrarColaboradorDetailView(generics.RetrieveUpdateDestroyAPIView):
