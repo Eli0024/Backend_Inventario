@@ -17,7 +17,6 @@ from .serializers import (
 )
 from .models import Conexion, Nodo, RegistrarColaborador, RegistrarEquipo, RegistrarLicencia, RegistrarMapa, Mantenimiento, Impresora, RegistrarUsuario, Switch
 from rest_framework.authtoken.models import Token
-from rest_framework import status,generics, permissions
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 from rest_framework.authentication import TokenAuthentication
@@ -74,7 +73,7 @@ def logout(request):
 class RegistrarEquipoView(generics.ListCreateAPIView):
     queryset = RegistrarEquipo.objects.all()
     serializer_class = RegistrarEquipoSerializer
-    permission_classes = [IsAuthenticated]  # Solo usuarios autenticados
+    permission_classes = [permissions.IsAuthenticated]  # Solo usuarios autenticados
 
     def perform_create(self, serializer):
         if self.request.user.is_staff:
@@ -85,14 +84,27 @@ class RegistrarEquipoView(generics.ListCreateAPIView):
 class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarEquipo.objects.all()
     serializer_class = RegistrarEquipoSerializer
-    permission_classes = [IsAuthenticated, IsAdminUser]  # Solo administradores
+    permission_classes = [permissions.IsAuthenticated]  # Solo usuarios autenticados
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({"message": "Equipo eliminado correctamente"}, status=status.HTTP_204_NO_CONTENT)
 
-
+@api_view(['GET'])
+def equipo_por_colaborador(request, id_colaborador):
+    try:
+        # Filtra los equipos por el ID del colaborador
+        equipos = RegistrarEquipo.objects.filter(responsable_id=id_colaborador)
+        if equipos.exists():
+            equipo = equipos.first()  # Obtén el primer equipo relacionado
+            serializer = RegistrarEquipoSerializer(equipo)
+            return Response(serializer.data)
+        else:
+            return Response({"error": "No se encontró ningún equipo para este colaborador"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+    
 class RegistrarUsuarioViewSet(generics.ListCreateAPIView):
      queryset = RegistrarUsuario.objects.all()
      serializer_class = RegistrarUsuarioSerializer

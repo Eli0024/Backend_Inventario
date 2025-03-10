@@ -7,6 +7,7 @@ RegistrarImpresoraDetailView, MantenimientoDetailView )
 urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
+    path('registrarequipo/por-colaborador/<int:id_colaborador>/', views.equipo_por_colaborador, name='equipo_por_colaborador'),
     path('registrarequipo/', RegistrarEquipoView.as_view(), name="listaequipo"),
     path('registrarequipo/<int:pk>/', RegistrarEquipoDetailView.as_view(), name="registrarequipo"),
     path('colaborador/', RegistrarColaboradorView.as_view(), name='listausuarios'),
