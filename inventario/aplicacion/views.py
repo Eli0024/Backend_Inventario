@@ -94,16 +94,21 @@ class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
 @api_view(['GET'])
 def equipo_por_colaborador(request, id_colaborador):
     try:
-        # Filtra los equipos por el ID del colaborador
         equipos = RegistrarEquipo.objects.filter(responsable_id=id_colaborador)
         if equipos.exists():
-            equipo = equipos.first()  # Obtén el primer equipo relacionado
-            serializer = RegistrarEquipoSerializer(equipo)
-            return Response(serializer.data)
+            equipo = equipos.first()
+            serializer = RegistrarEquipoSerializer(equipo, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({"error": "No se encontró ningún equipo para este colaborador"}, status=404)
+            return Response(
+                {"error": "No se encontró ningún equipo para este colaborador"},
+                status=status.HTTP_404_NOT_FOUND
+            )
     except Exception as e:
-        return Response({"error": str(e)}, status=500)
+        return Response(
+            {"error": f"Error del servidor: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
     
 class RegistrarUsuarioViewSet(generics.ListCreateAPIView):
      queryset = RegistrarUsuario.objects.all()
