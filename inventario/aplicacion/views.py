@@ -110,6 +110,73 @@ def equipo_por_colaborador(request, id_colaborador):
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
     
+from django.http import HttpResponse
+from openpyxl import Workbook
+
+
+from django.http import HttpResponse
+from openpyxl import Workbook
+
+
+def generar_reporte_usuarios_por_area(request):
+    # Obtener el área desde los parámetros de la solicitud
+    area = request.GET.get('area', None)
+
+    if not area:
+        return HttpResponse("Debes proporcionar un área.", status=400)
+
+    # Filtrar los usuarios por área
+    usuarios = RegistrarColaborador.objects.filter(area=area)
+
+    if not usuarios.exists():
+        return HttpResponse("No se encontraron usuarios para el área especificada.", status=404)
+
+    # Crear un libro de Excel
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Usuarios y Equipos por Área"
+
+    # Agregar encabezados
+    worksheet.append([
+        "ID Usuario", "Nombre", "Apellido", "Área", "Cargo", "Empresa",  # Datos del usuario
+        "ID Equipo", "Marca", "Modelo", "Memoria", "Procesador", "Office", "Serial", "Sistema Operativo", "Fecha Adquisición", "Estado"  # Datos del equipo
+    ])
+
+    # Agregar datos de los usuarios y sus equipos
+    for usuario in usuarios:
+        # Obtener el equipo asociado al usuario (suponiendo una relación uno a uno)
+        equipo = RegistrarEquipo.objects.filter(responsable=usuario).first()
+
+        worksheet.append([
+            # Datos del usuario
+            usuario.id_colaborador,
+            usuario.nombre,
+            usuario.apellido,
+            usuario.area,
+            usuario.cargo,
+            usuario.empresa,
+            # Datos del equipo (si existe)
+            equipo.id_equipo if equipo else "N/A",
+            equipo.marca if equipo else "N/A",
+            equipo.modelo if equipo else "N/A",
+            equipo.memoria if equipo else "N/A",
+            equipo.procesador if equipo else "N/A",
+            equipo.office if equipo else "N/A",
+            equipo.serial if equipo else "N/A",
+            equipo.sistema_operativo if equipo else "N/A",
+            equipo.fecha_adquisicion if equipo else "N/A",
+            equipo.estado if equipo else "N/A",
+        ])
+
+    # Crear una respuesta HTTP con el archivo Excel
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename=usuarios_y_equipos_{area}.xlsx'
+
+    # Guardar el libro de Excel en la respuesta
+    workbook.save(response)
+
+    return response
+
 class RegistrarUsuarioViewSet(generics.ListCreateAPIView):
      queryset = RegistrarUsuario.objects.all()
      serializer_class = RegistrarUsuarioSerializer
@@ -312,3 +379,18 @@ def total_licencias(request):
     # Obtén el total de equipos
     total = RegistrarLicencia.objects.count()
     return JsonResponse(total, safe=False)
+
+def total_mantenimiento(request):
+    # Obtén el total de equipos
+    total = Mantenimiento.objects.count()
+    return JsonResponse(total, safe=False)
+
+def total_impresoras(request):
+    # Obtén el total de equipos
+    total = Impresora.objects.count()
+    return JsonResponse(total, safe=False)
+
+# def total_licencias(request):
+#     # Obtén el total de equipos
+#     total = RegistrarLicencia.objects.count()
+#     return JsonResponse(total, safe=False)

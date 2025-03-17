@@ -2,11 +2,12 @@ from django.urls import path
 from . import views 
 from .views import ( RegistrarColaboradorDetailView, RegistrarColaboradorView, RegistrarEquipoView, RegistrarLicenciaView, RegistrarMapaView, MantenimientoView,
 RegistrarImpresoraView, RegistrarEquipoDetailView, RegistrarLicenciaDetailView, RegistrarMapaDetailView,
-RegistrarImpresoraDetailView, MantenimientoDetailView )
+RegistrarImpresoraDetailView, MantenimientoDetailView, generar_reporte_usuarios_por_area )
 
 urlpatterns = [
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
+    path('api/generar-reporte/', generar_reporte_usuarios_por_area, name='generar_reporte'),
     path('registrarequipo/por-colaborador/<int:id_colaborador>/', views.equipo_por_colaborador, name='equipo_por_colaborador'),
     path('registrarequipo/', RegistrarEquipoView.as_view(), name="listaequipo"),
     path('registrarequipo/<int:pk>/', RegistrarEquipoDetailView.as_view(), name="registrarequipo"),

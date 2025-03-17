@@ -55,14 +55,6 @@ class Mantenimiento(models.Model):
         return f"Mantenimiento de {self.equipo} - {self.fecha}"
 
 
-class Area(models.Model):
-    id_area = models.AutoField(primary_key=True)
-    area = models.CharField(max_length=50)  # Solicitud, carta, etc.
-    
-    def __str__(self):
-        return self.nombre
-
-
 # Modelo para registrar licencias
 class RegistrarLicencia(models.Model):
     id_licencia = models.AutoField(primary_key=True) 
@@ -94,30 +86,10 @@ class Impresora(models.Model):
         return self.nombre
 
 
-class Nodo(models.Model):
-    nombre = models.CharField(max_length=100)
-    latitud = models.FloatField()  # Latitud de la ubicación
-    longitud = models.FloatField()  # Longitud de la ubicación
-
-    def __str__(self):
-        return self.nombre
-
-class Switch(models.Model):
-    nodo = models.ForeignKey(Nodo, related_name='switches', on_delete=models.CASCADE)
-    direccion_ip = models.CharField(max_length=15)
-    descripcion = models.TextField()
-
-    def __str__(self):
-        return f"Switch en {self.nodo.nombre}"
-
-class Conexion(models.Model):
-    nodo_origen = models.ForeignKey(Nodo, related_name="origen", on_delete=models.CASCADE)
-    nodo_destino = models.ForeignKey(Nodo, related_name="destino", on_delete=models.CASCADE)
-    switch = models.ForeignKey(Switch, on_delete=models.CASCADE)
-    tipo_conexion = models.CharField(max_length=50)  # Ej: fibra óptica
-    estado = models.BooleanField(default=True)   # Por ejemplo, 'fibra óptica'
-
-    def __str__(self):
-        return f"Conexión de {self.nodo_origen.nombre} a {self.nodo_destino.nombre}"
-
-    
+class Perifericos(models.Model):
+    id_peri = models.AutoField(primary_key=True)
+    nombre = models.CharField(max_length=60)
+    modelo = models.CharField(max_length=60)
+    numero_serie = models.CharField(max_length=60)
+    fecha_adquisicion = models.CharField(max_length=50)
+    responsable = models.ForeignKey('RegistrarColaborador', on_delete=models.CASCADE)
