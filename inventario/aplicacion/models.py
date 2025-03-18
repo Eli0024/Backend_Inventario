@@ -25,8 +25,6 @@ class RegistrarEquipo(models.Model):
     responsable = models.ForeignKey('RegistrarColaborador', on_delete=models.CASCADE)
     archivo = models.FileField(upload_to='equipos/', null=True, blank=True)
 
-
-
     def __str__(self):
         return f"{self.marca} {self.modelo} - {self.estado}"
 
@@ -66,16 +64,6 @@ class RegistrarLicencia(models.Model):
     def __str__(self):
         return self.correo
 
-# Modelo para registrar mapa 
-class RegistrarMapa(models.Model):
-    id_mapa = models.AutoField(primary_key=True) 
-    ubicacion_switches = models.CharField(max_length=60)
-    fibra_optica = models.CharField(max_length=60)
-    interconexion_de_nodo_a_nodo = models.CharField(max_length=60)
-
-
-    def __str__(self):
-        return self.nombre
     
 class Impresora(models.Model):
     id_impre = models.AutoField(primary_key=True) 

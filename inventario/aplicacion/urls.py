@@ -1,8 +1,8 @@
 from django.urls import path
 from . import views 
-from .views import ( RegistrarColaboradorDetailView, RegistrarColaboradorView, RegistrarEquipoView, RegistrarLicenciaView, RegistrarMapaView, MantenimientoView,
-RegistrarImpresoraView, RegistrarEquipoDetailView, RegistrarLicenciaDetailView, RegistrarMapaDetailView,
-RegistrarImpresoraDetailView, MantenimientoDetailView, generar_reporte_usuarios_por_area )
+from .views import ( RegistrarColaboradorDetailView, RegistrarColaboradorView, RegistrarEquipoView, RegistrarLicenciaView,MantenimientoView,
+RegistrarImpresoraView, RegistrarEquipoDetailView, RegistrarLicenciaDetailView,
+RegistrarImpresoraDetailView, MantenimientoDetailView, RegistrarPerifericoDetailView, RegistrarPerifericoView, generar_reporte_usuarios_por_area )
 
 urlpatterns = [
     path('register/', views.register, name='register'),
@@ -17,11 +17,15 @@ urlpatterns = [
     path('licencias/<int:pk>/', RegistrarLicenciaDetailView.as_view(), name='licencias'),
     path('mantenimiento/', MantenimientoView.as_view(), name='listamantenimiento'),
     path('mantenimiento/<int:pk>/', MantenimientoDetailView.as_view(), name='mantenimiento'),
-    path('recursos/', RegistrarMapaView.as_view(), name='listarecursos'),
-    path('recursos/<int:pk>/', RegistrarMapaDetailView.as_view(), name='listarecursos'),
     path('impresora/', RegistrarImpresoraView.as_view(), name='listadocumento'),
     path('impresora/<int:pk>/', RegistrarImpresoraDetailView.as_view(), name='documento'),
+    path('periferico/', RegistrarPerifericoView.as_view(), name='listadocumento'),
+    path('periferico/<int:pk>/', RegistrarPerifericoDetailView.as_view(), name='documento'),
     path('registrarequipo/total', views.total_equipos, name='total_equipos'),
     path('registrarcolaborador/total', views.total_colaboradores, name='total_colaboradores'),
-    path('registrarlicencia/total', views.total_licencias, name='total_licencias')
+    path('registrarlicencia/total', views.total_licencias, name='total_licencias'),
+    path('impresora/total', views.total_impresoras, name='total_impresoras'),
+    path('mantenimiento/total', views.total_mantenimientos, name='total_mantenimientos'),
+    path('periferico/total', views.total_perifericos, name='total_perificos'),
+
 ]

@@ -1,4 +1,4 @@
-from . models import Conexion, Nodo, RegistrarColaborador, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, RegistrarMapa, Mantenimiento,Impresora, Switch
+from . models import Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, Mantenimiento,Impresora
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -58,10 +58,6 @@ class RegistrarLicenciaSerializer(serializers.ModelSerializer):
         model = RegistrarLicencia
         fields = '__all__'        
 
-class RegistrarMapaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RegistrarMapa
-        fields = '__all__'
 
 class MantenimientoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,27 +69,15 @@ class ImpresoraSerializer(serializers.ModelSerializer):
         model = Impresora
         fields = '__all__'
 
-class MapaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RegistrarMapa
-        fields = '__all__'
-
-class NodoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Nodo
-        fields = '__all__'
-
-class SwitchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Switch
-        fields = '__all__'
-
-class ConexionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Conexion
-        fields = '__all__'
-
 class RegistrarUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarUsuario
         fields = '__all__'
+
+class RegistrarPerifericoSerializer(serializers.ModelSerializer):
+
+    responsable = ResponsableSerializer()
+
+    class Meta:
+        model = Perifericos
+        fields = '__all__'        

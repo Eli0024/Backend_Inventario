@@ -3,19 +3,16 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes,authentication_classes
 from rest_framework.response import Response
 from .serializers import (
-    ConexionSerializer,
     RegistrarColaboradorSerializer,
-    NodoSerializer,
     RegistrarEquipoSerializer,
     RegistrarLicenciaSerializer,
-    MapaSerializer,
     MantenimientoSerializer,
     ImpresoraSerializer,
+    RegistrarPerifericoSerializer,
     RegistrarUsuarioSerializer,
-    SwitchSerializer,
     userSerializer
 )
-from .models import Conexion, Nodo, RegistrarColaborador, RegistrarEquipo, RegistrarLicencia, RegistrarMapa, Mantenimiento, Impresora, RegistrarUsuario, Switch
+from .models import Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarLicencia,Mantenimiento, Impresora, RegistrarUsuario
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
@@ -114,9 +111,6 @@ from django.http import HttpResponse
 from openpyxl import Workbook
 
 
-from django.http import HttpResponse
-from openpyxl import Workbook
-
 
 def generar_reporte_usuarios_por_area(request):
     # Obtener el área desde los parámetros de la solicitud
@@ -211,28 +205,6 @@ class RegistrarColaboradorView(generics.ListCreateAPIView):
         else:
             raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
 
-class RegistrarMapaView(generics.ListCreateAPIView):
-    queryset = RegistrarMapa.objects.all()
-    serializer_class = MapaSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def perform_create(self, serializer):
-        if self.request.user.is_staff:
-            serializer.save()
-        else:
-            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
-
-
-class RegistrarMapaDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = RegistrarMapa.objects.all()
-    serializer_class = MapaSerializer
-    permission_classes = [permissions.AllowAny]
-
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            if not self.request.user.is_staff:
-                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
-        return super().get_permissions()
 
 class RegistrarLicenciaView(generics.ListCreateAPIView):
     queryset = RegistrarLicencia.objects.all()
@@ -336,7 +308,6 @@ class RegistrarImpresoraView(generics.ListCreateAPIView):
     serializer_class = ImpresoraSerializer
     permission_classes = [permissions.AllowAny]
 
-    
 
 class RegistrarImpresoraDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Impresora.objects.all()
@@ -348,19 +319,24 @@ class RegistrarImpresoraDetailView(generics.RetrieveUpdateDestroyAPIView):
             if not self.request.user.is_staff:
                 raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
         return super().get_permissions()
+    
+
+class RegistrarPerifericoView(generics.ListCreateAPIView):
+    queryset = Perifericos.objects.all()
+    serializer_class = RegistrarPerifericoSerializer
+    permission_classes = [permissions.AllowAny]
 
 
-class NodoViewSet(viewsets.ModelViewSet):
-    queryset = Nodo.objects.all()
-    serializer_class = NodoSerializer
+class RegistrarPerifericoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Perifericos.objects.all()
+    serializer_class = RegistrarPerifericoSerializer
+    permission_classes = [permissions.AllowAny]
 
-class SwitchViewSet(viewsets.ModelViewSet):
-    queryset = Switch.objects.all()
-    serializer_class = SwitchSerializer
-
-class ConexionViewSet(viewsets.ModelViewSet):
-    queryset = Conexion.objects.all()
-    serializer_class = ConexionSerializer
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
 
 # inventario/views.py
 from django.http import JsonResponse
@@ -380,17 +356,17 @@ def total_licencias(request):
     total = RegistrarLicencia.objects.count()
     return JsonResponse(total, safe=False)
 
-def total_mantenimiento(request):
-    # Obtén el total de equipos
+def total_mantenimientos(request):
+    # Obtén el total de mantenimientos
     total = Mantenimiento.objects.count()
     return JsonResponse(total, safe=False)
 
 def total_impresoras(request):
-    # Obtén el total de equipos
+    # Obtén el total de impresoras
     total = Impresora.objects.count()
     return JsonResponse(total, safe=False)
 
-# def total_licencias(request):
-#     # Obtén el total de equipos
-#     total = RegistrarLicencia.objects.count()
-#     return JsonResponse(total, safe=False)
+def total_perifericos(request):
+    # Obtén el total de perifericos
+    total = Perifericos.objects.count()
+    return JsonResponse(total, safe=False)
