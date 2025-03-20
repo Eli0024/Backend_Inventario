@@ -26,6 +26,6 @@ urlpatterns = [
     path('registrarlicencia/total', views.total_licencias, name='total_licencias'),
     path('impresora/total', views.total_impresoras, name='total_impresoras'),
     path('mantenimiento/total', views.total_mantenimientos, name='total_mantenimientos'),
-    path('periferico/total', views.total_perifericos, name='total_perificos'),
+    path('perifericos/total', views.total_perifericos, name='total_perifericos'),
 
 ]

@@ -81,3 +81,10 @@ class RegistrarPerifericoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Perifericos
         fields = '__all__'        
+
+    def create(self, validated_data):
+        responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
+        responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
+        periferico = Perifericos.objects.create(responsable=responsable_instance, **validated_data)
+        return periferico
+    
