@@ -1,26 +1,21 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+# Modelo para registrar usuario (ya heredado de AbstractUser)
 class RegistrarUsuario(AbstractUser):
-    id_usuario = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=50, unique=True)
-    password = models.CharField(max_length=50)
-    is_staff = models.BooleanField(default=False)  # Agrega un valor por defecto o elimínalo si no es obligatorio
-
     def __str__(self):
         return self.username
 
-
+# Modelo para registrar equipo
 class RegistrarEquipo(models.Model):
-    id_equipo = models.AutoField(primary_key=True)
     marca = models.CharField(max_length=50)
     modelo = models.CharField(max_length=50, default='sin memoria')
     memoria = models.CharField(max_length=50, default='sin memoria')
     procesador = models.CharField(max_length=50, default='sin procesador')
     office = models.CharField(max_length=60)
-    serial = models.CharField(max_length=60,  unique=True)
+    serial = models.CharField(max_length=60, unique=True)
     sistema_operativo = models.CharField(max_length=60)
-    fecha_adquisicion = models.CharField(max_length=50)
+    fecha_adquisicion = models.DateField()  # Usar DateField en lugar de CharField
     estado = models.CharField(max_length=50)
     responsable = models.ForeignKey('RegistrarColaborador', on_delete=models.CASCADE)
     archivo = models.FileField(upload_to='equipos/', null=True, blank=True)
@@ -28,56 +23,53 @@ class RegistrarEquipo(models.Model):
     def __str__(self):
         return f"{self.marca} {self.modelo} - {self.estado}"
 
-# Modelo para registrar usuarios
+# Modelo para registrar colaborador
 class RegistrarColaborador(models.Model):
-    id_colaborador = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=60)
     apellido = models.CharField(max_length=60)
     empresa = models.CharField(max_length=50)
     area = models.CharField(max_length=50)
     cargo = models.CharField(max_length=50)
-    licencia = models.OneToOneField('RegistrarLicencia', on_delete=models.CASCADE)  # Relación uno a uno
 
     def __str__(self):
         return f"{self.nombre} {self.apellido} - {self.empresa}"
 
-
+# Modelo para registrar mantenimiento
 class Mantenimiento(models.Model):
-    id_mantenimiento = models.AutoField(primary_key=True)
     equipo = models.CharField(max_length=50)
-    fecha = models.CharField(max_length=50)
+    fecha = models.DateField()  # Usar DateField
     tipo = models.CharField(max_length=50)  # Preventivo, correctivo, etc.
     descripcion = models.CharField(max_length=50)
+    responsable = models.ForeignKey('RegistrarColaborador', on_delete=models.CASCADE)
 
     def __str__(self):
         return f"Mantenimiento de {self.equipo} - {self.fecha}"
 
-
 # Modelo para registrar licencias
 class RegistrarLicencia(models.Model):
-    id_licencia = models.AutoField(primary_key=True) 
     correo = models.CharField(max_length=60, default='sin memoria')
     contrasena = models.CharField(max_length=60)
-    serial_office = models.CharField(max_length=60, default='sin serial') 
-
+    serial_office = models.CharField(max_length=60, default='sin serial')
+    responsable = models.ForeignKey('RegistrarColaborador', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.correo
 
-    
+# Modelo para registrar impresoras    
 class Impresora(models.Model):
-    id_impre = models.AutoField(primary_key=True) 
     nombre = models.CharField(max_length=60)
     ip = models.CharField(max_length=60)
 
     def __str__(self):
         return self.nombre
 
-
+# Modelo para registrar periféricos
 class Perifericos(models.Model):
-    id_peri = models.AutoField(primary_key=True)
     nombre = models.CharField(max_length=60)
     modelo = models.CharField(max_length=60)
     numero_serie = models.CharField(max_length=60)
-    fecha_adquisicion = models.CharField(max_length=50)
+    fecha_adquisicion = models.DateField()  # Usar DateField en lugar de CharField
     responsable = models.ForeignKey('RegistrarColaborador', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.nombre

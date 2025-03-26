@@ -54,15 +54,38 @@ class RegistrarColaboradorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RegistrarLicenciaSerializer(serializers.ModelSerializer):
+    
+    responsable = ResponsableSerializer() 
+
+
     class Meta:
         model = RegistrarLicencia
-        fields = '__all__'        
+        fields = '__all__'
+
+    
+    # responsable = serializers.PrimaryKeyRelatedField(queryset=RegistrarUsuario.objects.all())
+    def create(self, validated_data):
+        responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
+        responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
+        licencia = RegistrarLicencia.objects.create(responsable=responsable_instance, **validated_data)
+        return licencia        
 
 
 class MantenimientoSerializer(serializers.ModelSerializer):
+    responsable = ResponsableSerializer() 
+
+
     class Meta:
         model = Mantenimiento
         fields = '__all__'
+
+    
+    # responsable = serializers.PrimaryKeyRelatedField(queryset=RegistrarUsuario.objects.all())
+    def create(self, validated_data):
+        responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
+        responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
+        mantenimiento = Mantenimiento.objects.create(responsable=responsable_instance, **validated_data)
+        return mantenimiento
 
 class ImpresoraSerializer(serializers.ModelSerializer):
     class Meta:
