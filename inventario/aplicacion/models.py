@@ -3,6 +3,9 @@ from django.contrib.auth.models import AbstractUser
 
 # Modelo para registrar usuario (ya heredado de AbstractUser)
 class RegistrarUsuario(AbstractUser):
+    
+    is_staff = models.BooleanField(default=False)
+
     def __str__(self):
         return self.username
 
