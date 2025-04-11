@@ -8,11 +8,12 @@ from .serializers import (
     RegistrarLicenciaSerializer,
     MantenimientoSerializer,
     ImpresoraSerializer,
+    RegistrarMantenImpreSerializer,
     RegistrarPerifericoSerializer,
     RegistrarUsuarioSerializer,
     userSerializer
 )
-from .models import Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarLicencia,Mantenimiento, Impresora, RegistrarUsuario
+from .models import MantenimientoImpresora, Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarLicencia,Mantenimiento, Impresora, RegistrarUsuario
 from rest_framework.authtoken.models import Token
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
@@ -106,7 +107,36 @@ def equipo_por_colaborador(request, id_colaborador):
             {"error": f"Error del servidor: {str(e)}"},
             status=status.HTTP_500_INTERNAL_SERVER_ERROR
         )
-    
+
+@api_view(['GET'])
+def impresora_con_mantenimiento(request, id_impresora):
+    try:
+        # Buscar la impresora por ID
+        impresora = Impresora.objects.filter(id=id_impresora).first()
+        
+        if impresora:
+            # Obtener los mantenimientos relacionados si existen
+            mantenimientos = MantenimientoImpresora.objects.filter(impresora=impresora)
+            
+            # Serializar los datos incluyendo los mantenimientos
+            serializer = ImpresoraSerializer(impresora, context={
+                'request': request,
+                'incluir_mantenimientos': True,
+                'mantenimientos': mantenimientos
+            })
+            
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response(
+                {"error": "No se encontró ninguna impresora con este ID"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+    except Exception as e:
+        return Response(
+            {"error": f"Error del servidor: {str(e)}"},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+        
 from django.http import HttpResponse
 from openpyxl import Workbook
 
@@ -143,14 +173,14 @@ def generar_reporte_usuarios_por_area(request):
 
         worksheet.append([
             # Datos del usuario
-            usuario.id_colaborador,
+            usuario.id,
             usuario.nombre,
             usuario.apellido,
             usuario.area,
             usuario.cargo,
             usuario.empresa,
             # Datos del equipo (si existe)
-            equipo.id_equipo if equipo else "N/A",
+            equipo.id if equipo else "N/A",
             equipo.marca if equipo else "N/A",
             equipo.modelo if equipo else "N/A",
             equipo.memoria if equipo else "N/A",
@@ -338,6 +368,24 @@ class RegistrarPerifericoDetailView(generics.RetrieveUpdateDestroyAPIView):
                 raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
         return super().get_permissions()
 
+
+class MantenimpreView(generics.ListCreateAPIView):
+    queryset = MantenimientoImpresora.objects.all()
+    serializer_class = RegistrarMantenImpreSerializer
+    permission_classes = [permissions.AllowAny]
+
+
+class MantenimpreDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = MantenimientoImpresora.objects.all()
+    serializer_class = RegistrarMantenImpreSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+            if not self.request.user.is_staff:
+                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
+        return super().get_permissions()
+    
 # inventario/views.py
 from django.http import JsonResponse
 

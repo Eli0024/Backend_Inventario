@@ -109,7 +109,7 @@ WSGI_APPLICATION = 'inventario.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'prueba',
+        'NAME': 'equipos',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost',

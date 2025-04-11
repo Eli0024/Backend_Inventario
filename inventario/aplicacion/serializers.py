@@ -1,4 +1,4 @@
-from . models import Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, Mantenimiento,Impresora
+from . models import MantenimientoImpresora, Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, Mantenimiento,Impresora
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
@@ -110,4 +110,32 @@ class RegistrarPerifericoSerializer(serializers.ModelSerializer):
         responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
         periferico = Perifericos.objects.create(responsable=responsable_instance, **validated_data)
         return periferico
+    
+
+class ImpresoraNombreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Impresora
+        fields = ['nombre']     
+
+class RegistrarMantenImpreSerializer(serializers.ModelSerializer):
+    
+    impresora = ImpresoraNombreSerializer()  # Campo anidado para los datos de la impresora
+
+    class Meta:
+        model = MantenimientoImpresora  # Asegúrate de que este sea el modelo correcto
+        fields = '__all__'
+
+    def create(self, validated_data):
+        # 1. Extrae los datos de la impresora (no 'nombre')
+        impresora_data = validated_data.pop('impresora')  # ¡Corregido!
+        
+        # 2. Busca o crea la Impresora (no MantenimientoImpresora)
+        impresora_instance, created = Impresora.objects.get_or_create(**impresora_data)
+        
+        # 3. Crea el MantenimientoImpresora con la impresora asociada
+        mantenimiento = MantenimientoImpresora.objects.create(
+            impresora=impresora_instance,
+            **validated_data
+        )
+        return mantenimiento
     

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views 
-from .views import ( RegistrarColaboradorDetailView, RegistrarColaboradorView, RegistrarEquipoView, RegistrarLicenciaView,MantenimientoView,
+from .views import ( MantenimpreDetailView, MantenimpreView, RegistrarColaboradorDetailView, RegistrarColaboradorView, RegistrarEquipoView, RegistrarLicenciaView,MantenimientoView,
 RegistrarImpresoraView, RegistrarEquipoDetailView, RegistrarLicenciaDetailView,
 RegistrarImpresoraDetailView, MantenimientoDetailView, RegistrarPerifericoDetailView, RegistrarPerifericoView, generar_reporte_usuarios_por_area )
 
@@ -9,6 +9,7 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('api/generar-reporte/', generar_reporte_usuarios_por_area, name='generar_reporte'),
     path('registrarequipo/por-colaborador/<int:id_colaborador>/', views.equipo_por_colaborador, name='equipo_por_colaborador'),
+    path('mantenimpre/por-impresora/<int:id_impresora>/', views.impresora_con_mantenimiento, name='impresora_por_manten'),
     path('registrarequipo/', RegistrarEquipoView.as_view(), name="listaequipo"),
     path('registrarequipo/<int:pk>/', RegistrarEquipoDetailView.as_view(), name="registrarequipo"),
     path('colaborador/', RegistrarColaboradorView.as_view(), name='listausuarios'),
@@ -21,6 +22,8 @@ urlpatterns = [
     path('impresora/<int:pk>/', RegistrarImpresoraDetailView.as_view(), name='documento'),
     path('periferico/', RegistrarPerifericoView.as_view(), name='listadocumento'),
     path('periferico/<int:pk>/', RegistrarPerifericoDetailView.as_view(), name='documento'),
+    path('mantenimpre/', MantenimpreView.as_view(), name='listadocumento'),
+    path('mantenimpre/<int:pk>/', MantenimpreDetailView.as_view(), name='documento'),
     path('registrarequipo/total', views.total_equipos, name='total_equipos'),
     path('registrarcolaborador/total', views.total_colaboradores, name='total_colaboradores'),
     path('registrarlicencia/total', views.total_licencias, name='total_licencias'),
