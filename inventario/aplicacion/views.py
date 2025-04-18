@@ -78,6 +78,14 @@ class RegistrarEquipoView(generics.ListCreateAPIView):
             serializer.save()
         else:
             raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+        
+    def update(self, request, *args, **kwargs):
+        print("Datos recibidos:", request.data)  # Para debug
+        return super().update(request, *args, **kwargs)
+
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)    
 
 class RegistrarEquipoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarEquipo.objects.all()

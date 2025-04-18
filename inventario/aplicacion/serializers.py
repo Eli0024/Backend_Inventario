@@ -26,27 +26,65 @@ class userSerializer(serializers.ModelSerializer):
 class ResponsableSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarColaborador
-        fields = ['nombre', 'apellido']  # Puedes incluir otros campos si los necesitas
+        fields = ['id','nombre', 'apellido']  # Puedes incluir otros campos si los necesitas
 
 
 class RegistrarEquipoSerializer(serializers.ModelSerializer):
-   
-
-    responsable = ResponsableSerializer() 
-
+    # Para mostrar todos los datos del responsable (GET)
+    responsable = ResponsableSerializer(read_only=True)
+    
+    # Para recibir solo el ID (POST/PUT)
+    responsable_id = serializers.IntegerField(
+        write_only=True,
+        source='responsable.id',
+        required=True
+    )
 
     class Meta:
         model = RegistrarEquipo
         fields = '__all__'
+        extra_kwargs = {
+            'responsable': {'read_only': True}
+        }
 
+    def create(self, validated_data):
+        # Obtiene el ID del responsable desde los datos validados
+        responsable_id = validated_data.pop('responsable')['id']
+        
+        try:
+            # Busca el responsable existente
+            responsable = RegistrarColaborador.objects.get(id=responsable_id)
+        except RegistrarColaborador.DoesNotExist:
+            raise serializers.ValidationError({"responsable_id": "El ID proporcionado no existe"})
+        
+        # Crea el equipo con la relación al responsable
+        equipo = RegistrarEquipo.objects.create(
+            responsable=responsable,
+            **validated_data
+        )
+        return equipo
+
+    def update(self, instance, validated_data):
+        # Similar al create pero para actualización
+        if 'responsable' in validated_data:
+            responsable_id = validated_data.pop('responsable')['id']
+            try:
+                instance.responsable = RegistrarColaborador.objects.get(id=responsable_id)
+            except RegistrarColaborador.DoesNotExist:
+                raise serializers.ValidationError({"responsable_id": "ID no existe"})
+        
+        # Actualiza los demás campos
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
     
-    # responsable = serializers.PrimaryKeyRelatedField(queryset=RegistrarUsuario.objects.all())
     def create(self, validated_data):
         responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
         responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
         equipo = RegistrarEquipo.objects.create(responsable=responsable_instance, **validated_data)
-        return equipo
-    
+        return equipo   
      
 class RegistrarColaboradorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -54,21 +92,21 @@ class RegistrarColaboradorSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class RegistrarLicenciaSerializer(serializers.ModelSerializer):
-    
-    responsable = ResponsableSerializer() 
-
+    responsable = ResponsableSerializer()
 
     class Meta:
         model = RegistrarLicencia
         fields = '__all__'
 
-    
-    # responsable = serializers.PrimaryKeyRelatedField(queryset=RegistrarUsuario.objects.all())
     def create(self, validated_data):
-        responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
+        responsable_data = validated_data.pop('responsable')
+
+        # Validamos o buscamos responsable
         responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
+
         licencia = RegistrarLicencia.objects.create(responsable=responsable_instance, **validated_data)
-        return licencia        
+        return licencia
+        
 
 
 class MantenimientoSerializer(serializers.ModelSerializer):
