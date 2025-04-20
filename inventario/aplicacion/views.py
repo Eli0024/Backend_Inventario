@@ -316,6 +316,14 @@ class MantenimientoView(generics.ListCreateAPIView):
         else:
             raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
         
+    def update(self, request, *args, **kwargs):
+        print("Datos recibidos:", request.data)  # Para debug
+        return super().update(request, *args, **kwargs)
+
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)    
+    
 class MantenimientoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Mantenimiento.objects.all()
     serializer_class = MantenimientoSerializer

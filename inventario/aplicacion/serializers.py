@@ -108,17 +108,57 @@ class RegistrarLicenciaSerializer(serializers.ModelSerializer):
         return licencia
         
 
-
 class MantenimientoSerializer(serializers.ModelSerializer):
-    responsable = ResponsableSerializer() 
-
+    # Para mostrar datos completos (GET)
+    responsable = ResponsableSerializer(read_only=True)
+    
+    # Para recibir solo el ID (POST/PUT)
+    responsable_id = serializers.IntegerField(
+        write_only=True,
+        source='responsable.id',
+        required=True
+    )
 
     class Meta:
         model = Mantenimiento
         fields = '__all__'
+        extra_kwargs = {
+            'responsable': {'read_only': True}
+        }
 
+    def create(self, validated_data):
+        # Obtiene el ID del responsable desde los datos validados
+        responsable_id = validated_data.pop('responsable')['id']
+        
+        try:
+            # Busca el responsable existente
+            responsable = RegistrarColaborador.objects.get(id=responsable_id)
+        except RegistrarColaborador.DoesNotExist:
+            raise serializers.ValidationError({"responsable_id": "El ID proporcionado no existe"})
+        
+        # Crea el equipo con la relación al responsable
+        mantenimiento = Mantenimiento.objects.create(
+            responsable=responsable,
+            **validated_data
+        )
+        return mantenimiento
+
+    def update(self, instance, validated_data):
+        # Similar al create pero para actualización
+        if 'responsable' in validated_data:
+            responsable_id = validated_data.pop('responsable')['id']
+            try:
+                instance.responsable = RegistrarColaborador.objects.get(id=responsable_id)
+            except RegistrarColaborador.DoesNotExist:
+                raise serializers.ValidationError({"responsable_id": "ID no existe"})
+        
+        # Actualiza los demás campos
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        
+        instance.save()
+        return instance
     
-    # responsable = serializers.PrimaryKeyRelatedField(queryset=RegistrarUsuario.objects.all())
     def create(self, validated_data):
         responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
         responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
