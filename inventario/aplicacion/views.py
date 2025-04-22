@@ -26,6 +26,7 @@ from rest_framework import generics, permissions, status
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.exceptions import PermissionDenied
 
+
 @api_view(['POST'])
 def register(request):
     serializer = userSerializer(data=request.data)
@@ -247,13 +248,21 @@ class RegistrarColaboradorView(generics.ListCreateAPIView):
 class RegistrarLicenciaView(generics.ListCreateAPIView):
     queryset = RegistrarLicencia.objects.all()
     serializer_class = RegistrarLicenciaSerializer
-    permission_classes = [permissions.AllowAny]        
+    permission_classes = [permissions.IsAuthenticated]  # Solo usuarios autenticados
 
     def perform_create(self, serializer):
         if self.request.user.is_staff:
             serializer.save()
         else:
             raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+        
+    def update(self, request, *args, **kwargs):
+        print("Datos recibidos:", request.data)  # Para debug
+        return super().update(request, *args, **kwargs)
+
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)  
 
 
 class RegistrarColaboradorDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -284,31 +293,17 @@ class RegistrarColaboradorDetailView(generics.RetrieveUpdateDestroyAPIView):
 class RegistrarLicenciaDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = RegistrarLicencia.objects.all()
     serializer_class = RegistrarLicenciaSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]  # Solo usuarios autenticados
 
-    def get(self, request, pk, format=None):
-        licencia = RegistrarLicencia.objects.get(pk=pk)
-        serializer = RegistrarLicenciaSerializer(licencia)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        licencia = RegistrarLicencia.objects.get(pk=pk)
-        serializer = RegistrarLicenciaSerializer(licencia, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            if not self.request.user.is_staff:
-                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
-        return super().get_permissions()
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Equipo eliminado correctamente"}, status=status.HTTP_204_NO_CONTENT)
 
 class MantenimientoView(generics.ListCreateAPIView):
     queryset = Mantenimiento.objects.all()
     serializer_class = MantenimientoSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         if self.request.user.is_staff:
@@ -327,28 +322,13 @@ class MantenimientoView(generics.ListCreateAPIView):
 class MantenimientoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Mantenimiento.objects.all()
     serializer_class = MantenimientoSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Equipo eliminado correctamente"}, status=status.HTTP_204_NO_CONTENT)
 
-    def get(self, request, pk, format=None):
-        mantenimiento = Mantenimiento.objects.get(pk=pk)
-        serializer = MantenimientoSerializer(mantenimiento)
-        return Response(serializer.data)
-
-    def put(self, request, pk, format=None):
-        mantenimiento = Mantenimiento.objects.get(pk=pk)
-        serializer = MantenimientoSerializer(mantenimiento, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            if not self.request.user.is_staff:
-                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
-        return super().get_permissions()
-    
 class RegistrarImpresoraView(generics.ListCreateAPIView):
     queryset = Impresora.objects.all()
     serializer_class = ImpresoraSerializer
@@ -370,19 +350,32 @@ class RegistrarImpresoraDetailView(generics.RetrieveUpdateDestroyAPIView):
 class RegistrarPerifericoView(generics.ListCreateAPIView):
     queryset = Perifericos.objects.all()
     serializer_class = RegistrarPerifericoSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]  # Solo usuarios autenticados
+
+    def perform_create(self, serializer):
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise permissions.PermissionDenied("Solo los administradores pueden crear productos")
+        
+    def update(self, request, *args, **kwargs):
+        print("Datos recibidos:", request.data)  # Para debug
+        return super().update(request, *args, **kwargs)
+
+
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)  
 
 
 class RegistrarPerifericoDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Perifericos.objects.all()
     serializer_class = RegistrarPerifericoSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
-            if not self.request.user.is_staff:
-                raise permissions.PermissionDenied("Solo los administradores pueden modificar productos")
-        return super().get_permissions()
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response({"message": "Equipo eliminado correctamente"}, status=status.HTTP_204_NO_CONTENT)
 
 
 class MantenimpreView(generics.ListCreateAPIView):
