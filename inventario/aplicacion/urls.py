@@ -7,7 +7,7 @@ RegistrarImpresoraDetailView, MantenimientoDetailView, RegistrarPerifericoDetail
 urlpatterns = [
     path('register/', views.register, name='register'), 
     path('login/', views.login, name='login'),
-    path('login/', views.login, name='login'),
+    path('login/', views.login, name='inicio'),
     path('api/generar-reporte/', generar_reporte_usuarios_por_area, name='generar_reporte'),
     path('registrarequipo/por-colaborador/<int:id_colaborador>/', views.equipo_por_colaborador, name='equipo_por_colaborador'),
     path('mantenimpre/por-impresora/<int:id_impresora>/', views.impresora_con_mantenimiento, name='impresora_por_manten'),
