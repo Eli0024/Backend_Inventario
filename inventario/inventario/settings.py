@@ -14,8 +14,12 @@ from pathlib import Path
 import pymysql
 pymysql.install_as_MySQLdb()
 
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # Quick-start development settings - unsuitable for production
@@ -43,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'rest_framework.authtoken',
+    'captcha',
 ]
 
 # mi_proyecto/settings.py
@@ -67,20 +72,27 @@ CORS_ALLOW_CREDENTIALS = True
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+    'aplicacion.middleware.EmpresaMiddleware',  # Nuestro middleware personalizado
 ]
 
-CORS_ORIGIN_WITHELIST = [
+CORS_ALLOWED_ORIGIN = [
     'http://localhost:4200'
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'inventario.urls'
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS=list(default_headers) + [
+    "X-Empresa-ID",
+]
 
 
 
@@ -114,9 +126,11 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '',
-        # 'OPTIONS': {
-        #     'ssl': False,  
-        # },
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+            'isolation_level': 'read committed',
+        },
     }
 }
 
@@ -177,3 +191,5 @@ PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     # Otros hashers si es necesario
 ]
+
+ 

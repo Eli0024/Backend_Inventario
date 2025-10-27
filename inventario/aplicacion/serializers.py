@@ -1,218 +1,244 @@
-from . models import MantenimientoImpresora, Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, Mantenimiento,Impresora
+from . models import MantenimientoImpresora, Perifericos, RegistrarColaborador, RegistrarEquipo, RegistrarUsuario, RegistrarLicencia, Mantenimiento,Impresora,ContrasenaSiesa, ContrasenaAntivirus,ContrasenaVPN,ContrasenaServidor,ContrasenaEquipo, Empresa,CalendarioEvento,RegistroTarea
+import re 
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
 
 class userSerializer(serializers.ModelSerializer):
-     class Meta:
-         model = RegistrarUsuario
-         fields = ['username','password','is_staff']
-        
-         extra_kwargs = {
-             'is_staff': {'read_only': False}, 
-         }
-        
-         def create(self, validated_data):
-             user = RegistrarUsuario.objects.create_user(
-                 username=validated_data['username'],
-                 password=validated_data['password']
-             )
-             if 'is_staff' in validated_data:
-                 user.is_staff = validated_data['is_staff']
-                 user.save()
-             return user
-        
+    class Meta:
+        model = RegistrarUsuario
+        fields = ['username','password', 'is_staff']  
+        extra_kwargs = {
+            'password': {'write_only': True},
+        }
+    
+    def create(self, validated_data):
+        user = RegistrarUsuario.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password'],
+            is_staff=validated_data.get('is_staff', False)
+        )
+        return user
 
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            if attr == 'password':
+                instance.set_password(value)
+            else:
+                setattr(instance, attr, value)
+        instance.save()
+        return instance
+    
+class RegistroTareaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=RegistroTarea
+        fields=['id','fecha','descripcion']
+        read_only_fields=['id','fecha']
+
+
+
+#SERIALIZER EMPRESA
+class EmpresaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Empresa
+        fields = ['id','nombre'] 
+
+#SERIALIZER RESPONSABLE
 class ResponsableSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarColaborador
-        fields = ['id','nombre', 'apellido']  # Puedes incluir otros campos si los necesitas
+        fields = ['id','nombre', 'apellido']          
 
 
 class RegistrarEquipoSerializer(serializers.ModelSerializer):
-    # Para mostrar todos los datos del responsable (GET)
     responsable = ResponsableSerializer(read_only=True)
-    
-    # Para recibir solo el ID (POST/PUT)
-    responsable_id = serializers.IntegerField(
+    empresa=EmpresaSerializer(read_only=True)
+
+    responsable_id = serializers.PrimaryKeyRelatedField(
+        queryset=RegistrarColaborador.objects.none(),
+        source='responsable',
         write_only=True,
-        source='responsable.id',
+        required=True
+    )
+    
+    class Meta:
+        model = RegistrarEquipo
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and hasattr(request, "empresa_actual") and request.empresa_actual:
+            self.fields["responsable_id"].queryset = RegistrarColaborador.objects.filter(
+                empresa=request.empresa_actual
+            )    
+        
+    
+     
+class RegistrarColaboradorSerializer(serializers.ModelSerializer):
+    empresa = EmpresaSerializer(
+        read_only=True,
+    )
+    empresa_id = serializers.PrimaryKeyRelatedField(
+        queryset=Empresa.objects.all(),
+        source='empresa',
+        write_only=True,
         required=True
     )
 
     class Meta:
-        model = RegistrarEquipo
-        fields = '__all__'
-        extra_kwargs = {
-            'responsable': {'read_only': True}
-        }
-
-    def create(self, validated_data):
-        # Obtiene el ID del responsable desde los datos validados
-        responsable_id = validated_data.pop('responsable')['id']
-        
-        try:
-            # Busca el responsable existente
-            responsable = RegistrarColaborador.objects.get(id=responsable_id)
-        except RegistrarColaborador.DoesNotExist:
-            raise serializers.ValidationError({"responsable_id": "El ID proporcionado no existe"})
-        
-        # Crea el equipo con la relación al responsable
-        equipo = RegistrarEquipo.objects.create(
-            responsable=responsable,
-            **validated_data
-        )
-        return equipo
-
-    def update(self, instance, validated_data):
-        # Similar al create pero para actualización
-        if 'responsable' in validated_data:
-            responsable_id = validated_data.pop('responsable')['id']
-            try:
-                instance.responsable = RegistrarColaborador.objects.get(id=responsable_id)
-            except RegistrarColaborador.DoesNotExist:
-                raise serializers.ValidationError({"responsable_id": "ID no existe"})
-        
-        # Actualiza los demás campos
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        
-        instance.save()
-        return instance
-    
-     
-class RegistrarColaboradorSerializer(serializers.ModelSerializer):
-    class Meta:
         model = RegistrarColaborador
-        fields = '__all__'
+        fields = ['id', 'nombre', 'apellido','area','cargo' ,'empresa', 'empresa_id']
+
+    
 
 class RegistrarLicenciaSerializer(serializers.ModelSerializer):
-
-    responsable = ResponsableSerializer(read_only=True)
+    equipo = serializers.SerializerMethodField(read_only=True)
+    empresa=EmpresaSerializer(read_only=True)
     
-    # Para recibir solo el ID (POST/PUT)
-    responsable_id = serializers.IntegerField(
+    equipo_id = serializers.PrimaryKeyRelatedField(
+        queryset=RegistrarEquipo.objects.none(),
+        source='equipo',
         write_only=True,
-        source='responsable.id',
-        required=True
+        required=False,   
+        allow_null=True
     )
 
     class Meta:
         model = RegistrarLicencia
         fields = '__all__'
         extra_kwargs = {
-            'responsable': {'read_only': True}
+            'empresa': {'read_only': True}
         }
 
-    def create(self, validated_data):
-        # Obtiene el ID del responsable desde los datos validados
-        responsable_id = validated_data.pop('responsable')['id']
-        
-        try:
-            # Busca el responsable existente
-            responsable = RegistrarColaborador.objects.get(id=responsable_id)
-        except RegistrarColaborador.DoesNotExist:
-            raise serializers.ValidationError({"responsable_id": "El ID proporcionado no existe"})
-        
-        # Crea el equipo con la relación al responsable
-        license = RegistrarLicencia.objects.create(
-            responsable=responsable,
-            **validated_data
-        )
-        return license
 
-    def update(self, instance, validated_data):
-        # Similar al create pero para actualización
-        if 'responsable' in validated_data:
-            responsable_id = validated_data.pop('responsable')['id']
-            try:
-                instance.responsable = RegistrarColaborador.objects.get(id=responsable_id)
-            except RegistrarColaborador.DoesNotExist:
-                raise serializers.ValidationError({"responsable_id": "ID no existe"})
-        
-        # Actualiza los demás campos
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        
-        instance.save()
-        return instance
-        
+    def __init__(self, instance=None, data=..., **kwargs):
+        super().__init__(instance, data, **kwargs)
+        request = self.context.get("request")
+        if request and hasattr(request, "empresa_actual") and request.empresa_actual:
+            self.fields["equipo_id"].queryset = RegistrarEquipo.objects.filter(
+                empresa=request.empresa_actual
+            )
+
+    def get_equipo(self, obj):
+        if obj.equipo:
+            return {
+                "id": obj.equipo.id,
+                "marca": obj.equipo.marca,
+                "serial": obj.equipo.serial,
+                "responsable": {
+                    "id": obj.equipo.responsable.id,
+                    "nombre": obj.equipo.responsable.nombre,
+                    "apellido": obj.equipo.responsable.apellido
+                },
+                "empresa": {"id": obj.equipo.empresa.id, "nombre": obj.equipo.empresa.nombre
+                }   
+            }
+        return None    
+    
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        if representation.get('equipo') is None:
+            representation['equipo'] = self.get_equipo(instance)
+        return representation
+    
+    
+
+class ResponsableEquipoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RegistrarColaborador
+        fields = ['id','nombre', 'apellido']  
+
+class EquipoSerializer(serializers.ModelSerializer):
+    responsable = ResponsableEquipoSerializer()
+
+    class Meta:
+        model = RegistrarEquipo
+        fields = ['id','marca', 'serial','responsable']
 
 class MantenimientoSerializer(serializers.ModelSerializer):
-    # Para mostrar datos completos (GET)
-    responsable = ResponsableSerializer(read_only=True)
+    equipo = serializers.SerializerMethodField(read_only=True)
+    empresa=EmpresaSerializer(read_only=True)
     
-    # Para recibir solo el ID (POST/PUT)
-    responsable_id = serializers.IntegerField(
+    equipo_id = serializers.PrimaryKeyRelatedField(
+        queryset=RegistrarEquipo.objects.all(),
+        source='equipo',
         write_only=True,
-        source='responsable.id',
-        required=True
+        required=True,
+        allow_null=True
     )
+
 
     class Meta:
         model = Mantenimiento
         fields = '__all__'
         extra_kwargs = {
-            'responsable': {'read_only': True}
+            'empresa': {'read_only': True},
         }
 
-    def create(self, validated_data):
-        # Obtiene el ID del responsable desde los datos validados
-        responsable_id = validated_data.pop('responsable')['id']
+    def get_equipo(self, obj):
+        if obj.equipo:
+            return {
+                "id": obj.equipo.id,
+                "marca": obj.equipo.marca,
+                "serial": obj.equipo.serial,
+                "responsable": {
+                    "id": obj.equipo.responsable.id,
+                    "nombre": obj.equipo.responsable.nombre,
+                    "apellido": obj.equipo.responsable.apellido
+                },
+                "empresa": {
+                    "id": obj.equipo.empresa.id,
+                    "nombre": obj.equipo.empresa.nombre
+                }
+            }
+        return None
+
         
-        try:
-            # Busca el responsable existente
-            responsable = RegistrarColaborador.objects.get(id=responsable_id)
-        except RegistrarColaborador.DoesNotExist:
-            raise serializers.ValidationError({"responsable_id": "El ID proporcionado no existe"})
-        
-        # Crea el equipo con la relación al responsable
-        mantenimiento = Mantenimiento.objects.create(
-            responsable=responsable,
-            **validated_data
-        )
-        return mantenimiento
 
     def update(self, instance, validated_data):
-        # Similar al create pero para actualización
-        if 'responsable' in validated_data:
-            responsable_id = validated_data.pop('responsable')['id']
-            try:
-                instance.responsable = RegistrarColaborador.objects.get(id=responsable_id)
-            except RegistrarColaborador.DoesNotExist:
-                raise serializers.ValidationError({"responsable_id": "ID no existe"})
-        
-        # Actualiza los demás campos
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        
         instance.save()
         return instance
     
-    def create(self, validated_data):
-        responsable_data = validated_data.pop('responsable')  # Extraer datos del campo anidado
-        responsable_instance, created = RegistrarColaborador.objects.get_or_create(**responsable_data)
-        mantenimiento = Mantenimiento.objects.create(responsable=responsable_instance, **validated_data)
-        return mantenimiento
 
+#CALENDARIO 
+class CalendarioEventoSerializer(serializers.ModelSerializer):
+    fecha_fin = serializers.DateTimeField(required=False, allow_null=True)
+    color = serializers.CharField(required=False, allow_null=True)
+
+    class Meta:
+        model = CalendarioEvento
+        fields = ('id',
+            'titulo',
+            'fecha_inicio',
+            'fecha_fin',
+            'color',)
+
+#IMPRESORA
 class ImpresoraSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Impresora
         fields = '__all__'
-
+        extra_kwargs = {
+            'empresa': {'read_only': True},
+        }
+    
 class RegistrarUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = RegistrarUsuario
         fields = '__all__'
 
 class RegistrarPerifericoSerializer(serializers.ModelSerializer):
-
     responsable = ResponsableSerializer(read_only=True)
-    
+    empresa=EmpresaSerializer(read_only=True)
     # Para recibir solo el ID (POST/PUT)
-    responsable_id = serializers.IntegerField(
+    responsable_id = serializers.PrimaryKeyRelatedField(
+        queryset=RegistrarColaborador.objects.all(),
         write_only=True,
-        source='responsable.id',
+        source='responsable',
         required=True
     )
 
@@ -220,36 +246,11 @@ class RegistrarPerifericoSerializer(serializers.ModelSerializer):
         model = Perifericos
         fields = '__all__'
         extra_kwargs = {
-            'responsable': {'read_only': True}
+            'responsable': {'read_only': True},
+            'empresa': {'read_only': True}
         }
 
-    def create(self, validated_data):
-        # Obtiene el ID del responsable desde los datos validados
-        responsable_id = validated_data.pop('responsable')['id']
-        
-        try:
-            # Busca el responsable existente
-            responsable = RegistrarColaborador.objects.get(id=responsable_id)
-        except RegistrarColaborador.DoesNotExist:
-            raise serializers.ValidationError({"responsable_id": "El ID proporcionado no existe"})
-        
-        # Crea el equipo con la relación al responsable
-        periferico = Perifericos.objects.create(
-            responsable=responsable,
-            **validated_data
-        )
-        return periferico
-
     def update(self, instance, validated_data):
-        # Similar al create pero para actualización
-        if 'responsable' in validated_data:
-            responsable_id = validated_data.pop('responsable')['id']
-            try:
-                instance.responsable = RegistrarColaborador.objects.get(id=responsable_id)
-            except RegistrarColaborador.DoesNotExist:
-                raise serializers.ValidationError({"responsable_id": "ID no existe"})
-        
-        # Actualiza los demás campos
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         
@@ -260,27 +261,144 @@ class RegistrarPerifericoSerializer(serializers.ModelSerializer):
 class ImpresoraNombreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Impresora
-        fields = ['nombre']     
+        fields = ['id','nombre','direccion_ip'] 
+
 
 class RegistrarMantenImpreSerializer(serializers.ModelSerializer):
+    impresora = ImpresoraNombreSerializer(read_only=True)
     
-    impresora = ImpresoraNombreSerializer()  # Campo anidado para los datos de la impresora
+    impresora_id = serializers.PrimaryKeyRelatedField(
+        queryset=Impresora.objects.none(),
+        write_only=True,
+        source='impresora',
+        required=True
+    )
+    
+    class Meta:
+        model = MantenimientoImpresora  
+        fields = '__all__'
+        extra_kwargs = {
+            'impresora': {'read_only': True},
+            'empresa': {'read_only': True}
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and hasattr(request, "empresa_actual") and request.empresa_actual:
+            self.fields["impresora_id"].queryset = Impresora.objects.filter(
+                empresa=request.empresa_actual
+            )    
+
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+# Siesa
+class ContrasenaSiesaSerializer(serializers.ModelSerializer):
+   
+    class Meta:
+        model = ContrasenaSiesa
+        fields = '__all__'
+        extra_kwargs = {
+            'empresa': {'read_only': True}
+        }
+    
+
+    def update(self, instance, validated_data):
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+    
+# Antivirus
+class ContrasenaAntivirusSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ContrasenaAntivirus
+        fields = '__all__'
+        extra_kwargs = {
+            'empresa': {'read_only': True}
+        }
+
+
+    def update(self, instance, validated_data):
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance  
+
+# VPN
+class ContrasenaVPNSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = MantenimientoImpresora  # Asegúrate de que este sea el modelo correcto
+        model = ContrasenaVPN
         fields = '__all__'
+        extra_kwargs = {
+            'empresa': {'read_only': True}
+        }
 
-    def create(self, validated_data):
-        # 1. Extrae los datos de la impresora (no 'nombre')
-        impresora_data = validated_data.pop('impresora')  # ¡Corregido!
-        
-        # 2. Busca o crea la Impresora (no MantenimientoImpresora)
-        impresora_instance, created = Impresora.objects.get_or_create(**impresora_data)
-        
-        # 3. Crea el MantenimientoImpresora con la impresora asociada
-        mantenimiento = MantenimientoImpresora.objects.create(
-            impresora=impresora_instance,
-            **validated_data
-        )
-        return mantenimiento
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+# Servidor
+class ContrasenaServidorSerializer(serializers.ModelSerializer):
+    archivo = serializers.FileField(required=False, allow_null=True)
+
+    class Meta:
+        model = ContrasenaServidor
+        fields = '__all__'
+        extra_kwargs = {
+            'empresa': {'read_only': True}
+        }
+
+
+    def update(self, instance, validated_data):
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+class ContrasenaEquipoSerializer(serializers.ModelSerializer):
+    responsable = ResponsableSerializer(read_only=True)
+    empresa=EmpresaSerializer(read_only=True) 
     
+    responsable_id = serializers.PrimaryKeyRelatedField(
+        queryset=RegistrarColaborador.objects.all(),
+        write_only=True,
+        source='responsable',
+        required=True
+    )
+
+    class Meta:
+        model = ContrasenaEquipo
+        fields = '__all__'
+        extra_kwargs = {
+            'responsable': {'read_only': True},
+            'empresa': {'read_only': True}
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        request = self.context.get("request")
+        if request and hasattr(request, "empresa_actual") and request.empresa_actual:
+            self.fields["responsable_id"].queryset = RegistrarColaborador.objects.filter(
+                empresa=request.empresa_actual
+            )    
+
+
+    def update(self, instance, validated_data):
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
